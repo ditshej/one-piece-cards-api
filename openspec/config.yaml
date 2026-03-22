@@ -1,0 +1,45 @@
+schema: spec-driven
+
+context: |
+  Project: One Piece TCG (OPTCG) Card API
+  Purpose: Laravel-based REST API providing all OPTCG card data, including the latest sets (OP15+)
+  that are missing from existing APIs like optcgapi.com (only up to OP-14) or vegapull-records (only up to OP-10).
+
+  Data source: Vegapull (https://github.com/Coko7/vegapull) — a Rust CLI tool that scrapes the official
+  Bandai card list (https://en.onepiece-cardgame.com/cardlist). Output: JSON files per set with fields:
+  id, pack_id, name, rarity, category, colors (array), cost, power, counter, attributes (array),
+  types (array), effect (text), trigger (text), img_url.
+
+  Tech stack: PHP 8.4, Laravel 13, Pest 4, Pint, SQLite (later PostgreSQL)
+  Coding standards: Spatie PHP/Laravel guidelines (see docs/spatie-guidelines.md)
+  Key conventions:
+    - Happy path last, avoid else, use early returns
+    - Only up() in migrations, never down()
+    - Plural controller names (CardsController), CRUD methods only
+    - Array notation for validation rules
+    - Use config() helper, never env() outside config files
+    - Typed properties over docblocks, constructor property promotion
+    - kebab-case URLs, camelCase route names
+    - Self-documenting code over comments
+    - TDD approach: tests first, then implementation
+    - Conventional Commits
+
+  Consumer: First consumer is a Brook OP15 Deck Simulator (separate Laravel project).
+  The API should be designed for consumption by multiple projects.
+
+rules:
+  tasks:
+    - Break tasks into chunks of max 2 hours
+    - Include migration tasks when database changes are needed
+    - Add API tests as separate tasks
+  proposal:
+    - Always include a "Non-goals" section
+    - Identify affected API endpoints
+  specs:
+    - Use Given/When/Then format for scenarios
+    - Reference existing Laravel patterns before inventing new ones
+    - Include scenarios for validation error responses
+    - Include HTTP status codes in scenarios
+  design:
+    - Document middleware and service layer decisions
+    - Prefer Laravel's built-in features over third-party packages

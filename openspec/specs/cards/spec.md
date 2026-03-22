@@ -2,9 +2,7 @@
 
 ## Purpose
 Management of OPTCG card data. Cards are the core domain entity of the API.
-
 ## Requirements
-
 ### Requirement: Card Model
 The system SHALL store card data with the following attributes:
 - `id` (string, unique) — Card identifier from vegapull (e.g., "OP01-001")
@@ -22,13 +20,18 @@ The system SHALL store card data with the following attributes:
 - `trigger` (text, nullable) — Trigger effect text
 - `img_url` (string) — URL to the card image on the official Bandai site
 
+#### Scenario: Create card with all attributes
+- **WHEN** a card is created with all required attributes
+- **THEN** the card is persisted with the correct values for each field
+
 ### Requirement: Card belongs to Pack
-Each card SHALL belong to exactly one pack.
+Each card SHALL belong to exactly one pack. The relationship SHALL be defined as a `belongsTo` Eloquent relationship on the Card model, with a foreign key `pack_id` referencing the Pack model.
 
 #### Scenario: Card with valid pack reference
-- GIVEN a card with pack_id "OP01"
-- WHEN the card is retrieved
-- THEN the associated pack data is accessible via the relationship
+- **GIVEN** a pack "OP01" exists
+- **WHEN** a card is created with pack_id "OP01"
+- **THEN** the associated pack is accessible via the `pack` relationship
+- **AND** the pack's id is "OP01"
 
 ### Requirement: Card searchability
 Cards SHALL be searchable by color, category, cost, type, and effect text.
@@ -44,3 +47,38 @@ Cards SHALL be searchable by color, category, cost, type, and effect text.
 - WHEN a request searches for "draw 2 cards"
 - THEN cards whose effect text contains the search term are returned
 - AND the response status is 200
+
+### Requirement: Card uses string primary key
+The Card model SHALL use a non-incrementing string primary key (`id`), matching the vegapull card identifiers (e.g., "OP01-001", "ST01-012").
+
+#### Scenario: Create card with string ID
+- **WHEN** a Card is created with id "OP01-001"
+- **THEN** the card is persisted with the exact string id "OP01-001"
+- **AND** no auto-incrementing integer id is generated
+
+### Requirement: Card array fields stored as JSON
+The Card model SHALL cast `colors`, `attributes`, and `types` fields to arrays, stored as JSON columns in the database.
+
+#### Scenario: Card with multiple colors
+- **GIVEN** a card with colors ["Red", "Green"]
+- **WHEN** the card is retrieved
+- **THEN** the colors field is a PHP array containing "Red" and "Green"
+
+#### Scenario: Card with empty attributes
+- **GIVEN** a card with an empty attributes array
+- **WHEN** the card is retrieved
+- **THEN** the attributes field is an empty PHP array
+
+### Requirement: Card factory for testing
+The Card model SHALL have a factory that generates realistic OPTCG card data for use in tests. The factory SHALL automatically create an associated Pack.
+
+#### Scenario: Generate card from factory
+- **WHEN** a Card is created via its factory
+- **THEN** the card has all required attributes populated
+- **AND** an associated pack exists in the database
+
+#### Scenario: Generate card with specific category
+- **WHEN** a Card is created via its factory with category "Leader"
+- **THEN** the card has category "Leader"
+- **AND** the card has a non-null power value
+

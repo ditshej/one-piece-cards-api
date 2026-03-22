@@ -43,6 +43,13 @@ This project has domain-specific skills available. You MUST activate the relevan
 - Description: imperative, lowercase, no period at end.
 - Body and footers are optional; use them for context when the description alone is not enough.
 
+## Testing (TDD)
+
+- This project follows Test-Driven Development. Always write tests FIRST, then implement the code to make them pass.
+- Use Pest 4 for all tests. Most tests should be feature tests.
+- Aim for comprehensive test coverage. No feature or service without tests.
+- Run `php artisan test --compact` to verify all tests pass before finalizing changes.
+
 ## Verification Scripts
 
 - Do not create verification scripts or tinker when tests cover that functionality and prove they work. Unit and feature tests are more important.

@@ -84,5 +84,13 @@ The system SHALL provide `GET /api/packs/{id}` returning a single pack with its 
 ### Requirement: JSON API Resources
 The system SHALL use Laravel Eloquent API Resources for response formatting.
 
+#### Scenario: Card response uses API Resource
+- **WHEN** a card is returned from the API
+- **THEN** the response is formatted through a CardResource class
+
 ### Requirement: API Versioning
-The API SHOULD support versioning (e.g., `/api/v1/cards`) to allow future breaking changes without affecting existing consumers.
+The system SHALL support versioning (e.g., `/api/v1/cards`) to allow future breaking changes without affecting existing consumers.
+
+#### Scenario: API routes are versioned
+- **WHEN** a request is made to `/api/v1/cards`
+- **THEN** the versioned endpoint responds successfully

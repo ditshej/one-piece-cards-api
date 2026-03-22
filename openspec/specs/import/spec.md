@@ -22,7 +22,7 @@ The system SHALL provide an Artisan command `cards:import` that reads vegapull J
 - AND the card count remains the same
 
 ### Requirement: Vegapull Integration
-The system SHOULD provide an optional Artisan command that executes vegapull to fetch fresh JSON data before importing.
+The system SHALL provide an optional Artisan command that executes vegapull to fetch fresh JSON data before importing.
 
 #### Scenario: Fetch and import new sets
 - GIVEN vegapull is installed on the system
@@ -31,7 +31,7 @@ The system SHOULD provide an optional Artisan command that executes vegapull to 
 - AND the scraped JSON files are imported into the database
 
 ### Requirement: Scheduled Import
-The system MAY support a scheduled command that periodically runs vegapull and imports new data.
+The system SHALL support a scheduled command that periodically runs vegapull and imports new data.
 
 #### Scenario: Scheduled weekly import
 - GIVEN the scheduled import is configured

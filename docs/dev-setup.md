@@ -59,7 +59,56 @@ In `CLAUDE.md` unter `## Git Commits` die Convention festlegen:
 
 Referenz: [conventionalcommits.org/en/v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)
 
-## 5. .gitignore ergänzen
+## 5. Git + OpenSpec Feature Branch Flow
+
+Jede OpenSpec-Change bekommt einen eigenen Feature-Branch. Kein Squash-Merge — die volle History bleibt auf `main` erhalten.
+
+### Branch-Namenskonvention
+
+```
+feat/<change-name>      # z.B. feat/import-cards-command
+```
+
+### Workflow pro Change
+
+```bash
+# 1. Branch erstellen
+git checkout -b feat/<change-name>
+
+# 2. OpenSpec Change erstellen & planen
+openspec new change "<change-name>"
+# → proposal.md, specs/, design.md, tasks.md erstellen
+# → Commit: "docs: add openspec change <change-name>"
+
+# 3. Implementation (TDD)
+# /opsx:apply — Tasks abarbeiten
+# → Commit(s): "feat: ...", "test: ...", etc.
+
+# 4. Archivierung
+# /opsx:archive — Change abschliessen, Specs mergen
+# → Commit: "docs: archive <change-name> change"
+
+# 5. Merge nach main (kein Squash!)
+git checkout main
+git merge feat/<change-name>
+git push
+git branch -d feat/<change-name>
+```
+
+### Resultierende History auf main
+
+```
+* docs: archive import-cards-command change
+* feat: add cards:import artisan command
+* docs: add openspec change import-cards-command
+* docs: archive pack-and-card-models change
+* feat: add Pack and Card models with migrations and factories
+* docs: add openspec change pack-and-card-models
+```
+
+Jedes Feature hat 3 Commits: Planung → Implementation → Archivierung.
+
+## 6. .gitignore ergänzen
 
 Folgendes hinzufügen:
 
@@ -67,7 +116,7 @@ Folgendes hinzufügen:
 .claude/settings.local.json
 ```
 
-## 6. Claude Code Agents (global, einmalig)
+## 7. Claude Code Agents (global, einmalig)
 
 Zwei Agents in `~/.claude/agents/` einrichten:
 
@@ -76,7 +125,7 @@ Zwei Agents in `~/.claude/agents/` einrichten:
 
 Quelle: [freekmurze/dotfiles/config/claude/agents/](https://github.com/freekmurze/dotfiles/tree/main/config/claude/agents)
 
-## 7. Git-Delta (global, einmalig)
+## 8. Git-Delta (global, einmalig)
 
 ```bash
 brew install git-delta
@@ -99,7 +148,7 @@ In `~/.gitconfig` hinzufügen:
     colorMoved = default
 ```
 
-## 8. Optional: Weitere CLI-Tools
+## 9. Optional: Weitere CLI-Tools
 
 ```bash
 brew install eza bat zoxide fzf fnm
@@ -111,7 +160,7 @@ brew install eza bat zoxide fzf fnm
 - `fzf` — Fuzzy-Finder
 - `fnm` — Schneller Node.js Version Manager
 
-## 9. Shell Aliases
+## 10. Shell Aliases
 
 Eigene Datei `~/.aliases` anlegen und in `~/.zshrc` sourcen:
 
@@ -150,7 +199,7 @@ alias cy="claude --dangerously-skip-permissions"
 alias nah="git reset --hard && git clean -df"
 ```
 
-## 10. Claude Code Deny Rules (global)
+## 11. Claude Code Deny Rules (global)
 
 In `~/.claude/settings.json` Deny Rules hinzufügen. Diese greifen auch im Bypass-Modus (`--dangerously-skip-permissions`) und blocken destruktive Befehle:
 

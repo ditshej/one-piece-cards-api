@@ -129,9 +129,14 @@ openspec new change "<change-name>"
 # 4. Code Review
 # a) laravel-simplifier Agent — automatisches Review
 # b) Findings fixen, dann committen
-# → Commit(s): "feat: ...", "test: ...", etc.
-# c) User reviewt selbst (PHPStorm, GitHub PR, oder git diff main...HEAD)
+# c) Agent gibt Code-Übersicht (Architektur, Dateien, Tests)
+#    + manuelle Testanleitung falls UI/Endpunkte betroffen
+# d) User reviewt selbst (PhpStorm, GitHub PR, oder git diff main...HEAD)
 # → Erst nach User-OK weitermachen!
+# → Commit(s): "feat: ...", "refactor: ...", etc.
+
+# Feature-Branch aktuell halten: Rebase statt Merge
+git fetch origin && git rebase origin/main
 
 # 5. Archivierung
 # /opsx:archive — Change abschliessen, Specs mergen

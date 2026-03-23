@@ -16,9 +16,15 @@ composer require --dev laravel/boost laravel/pail laravel/pint pestphp/pest pest
 ## 2. OpenSpec einrichten
 
 ```bash
-npm install -g @fission-ai/openspec@latest
-openspec init --tools claude
+npm install -g @fission-ai/openspec
+openspec init
 ```
+
+Das erstellt:
+- `openspec/config.yaml` — Projekt-Config
+- `openspec/specs/` — Langlebige Projekt-Specs (werden durch Changes befüllt)
+- `openspec/changes/` — Kurzlebige Arbeitspakete
+- `.claude/skills/openspec-*` — Skills für Claude Code Agents
 
 `openspec/config.yaml` mit Projekt-Context befüllen:
 
@@ -26,8 +32,14 @@ openspec init --tools claude
 schema: spec-driven
 
 context: |
-  Tech stack: PHP 8.x, Laravel 13, Pest 4, Pint
-  Coding standards: Spatie PHP/Laravel guidelines (see docs/spatie-guidelines.md)
+  ## Project
+  <Projekt-Beschreibung>
+
+  ## Tech Stack
+  PHP 8.x, Laravel 12, Pest 4, Pint, Blade + Tailwind 4 + Alpine.js, Vite, SQLite
+
+  ## Coding Standards
+  Spatie PHP/Laravel guidelines (see docs/spatie-guidelines.md)
   Key conventions:
     - Happy path last, avoid else, use early returns
     - Only up() in migrations, never down()
@@ -37,9 +49,31 @@ context: |
     - Typed properties over docblocks, constructor property promotion
     - kebab-case URLs, camelCase route names
     - Self-documenting code over comments
+
+  ## Development Approach
+  - TDD: always write tests FIRST, then implement
+  - Conventional Commits
+
+rules:
+  tasks:
+    - Break tasks into chunks of max 2 hours
+    - Tests must be listed BEFORE implementation tasks
+  proposal:
+    - Always include a "Non-goals" section
 ```
 
-Initiale Specs unter `openspec/specs/` anlegen (pro Domain ein Ordner mit `spec.md`).
+### OpenSpec Workflow
+
+Jeder Change durchläuft 4 Artifacts:
+
+```
+/openspec-propose     → proposal.md (WARUM)
+                      → specs/*.md  (WAS — Requirements mit WHEN/THEN Scenarios)
+                      → design.md   (WIE — Architektur-Entscheide)
+                      → tasks.md    (TODO — Checkboxen, Tests vor Code)
+/openspec-apply-change → Implementieren (Tasks abarbeiten)
+/openspec-archive-change → Abschliessen, Specs in Haupt-Specs syncen
+```
 
 ## 3. Spatie Guidelines
 
@@ -59,7 +93,16 @@ In `CLAUDE.md` unter `## Git Commits` die Convention festlegen:
 
 Referenz: [conventionalcommits.org/en/v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)
 
-## 5. Git + OpenSpec Feature Branch Flow
+## 5. TDD (Test-Driven Development)
+
+In `CLAUDE.md` unter `## Testing (TDD)` festlegen:
+
+- Tests ZUERST schreiben, dann den Code implementieren
+- Pest 4 für alle Tests, bevorzugt Feature Tests
+- Umfassende Test-Coverage anstreben — kein Feature ohne Tests
+- `php artisan test --compact` nach jeder Änderung
+
+## 6. Git + OpenSpec Feature Branch Flow
 
 Jede OpenSpec-Change bekommt einen eigenen Feature-Branch. Kein Squash-Merge — die volle History bleibt auf `main` erhalten.
 
@@ -82,13 +125,19 @@ openspec new change "<change-name>"
 
 # 3. Implementation (TDD)
 # /opsx:apply — Tasks abarbeiten
-# → Commit(s): "feat: ...", "test: ...", etc.
 
-# 4. Archivierung
+# 4. Code Review
+# a) laravel-simplifier Agent — automatisches Review
+# b) Findings fixen, dann committen
+# → Commit(s): "feat: ...", "test: ...", etc.
+# c) User reviewt selbst (PHPStorm, GitHub PR, oder git diff main...HEAD)
+# → Erst nach User-OK weitermachen!
+
+# 5. Archivierung
 # /opsx:archive — Change abschliessen, Specs mergen
 # → Commit: "docs: archive <change-name> change"
 
-# 5. Merge nach main (kein Squash!)
+# 6. Merge nach main (kein Squash!)
 git checkout main
 git merge feat/<change-name>
 git push
@@ -99,6 +148,7 @@ git branch -d feat/<change-name>
 
 ```
 * docs: archive import-cards-command change
+* refactor: apply simplifier findings
 * feat: add cards:import artisan command
 * docs: add openspec change import-cards-command
 * docs: archive pack-and-card-models change
@@ -106,9 +156,9 @@ git branch -d feat/<change-name>
 * docs: add openspec change pack-and-card-models
 ```
 
-Jedes Feature hat 3 Commits: Planung → Implementation → Archivierung.
+Jedes Feature hat 3-4 Commits: Planung → Implementation → Review (optional) → Archivierung.
 
-## 6. .gitignore ergänzen
+## 7. .gitignore ergänzen
 
 Folgendes hinzufügen:
 
@@ -116,7 +166,7 @@ Folgendes hinzufügen:
 .claude/settings.local.json
 ```
 
-## 7. Claude Code Agents (global, einmalig)
+## 8. Claude Code Agents (global, einmalig)
 
 Zwei Agents in `~/.claude/agents/` einrichten:
 
@@ -125,7 +175,7 @@ Zwei Agents in `~/.claude/agents/` einrichten:
 
 Quelle: [freekmurze/dotfiles/config/claude/agents/](https://github.com/freekmurze/dotfiles/tree/main/config/claude/agents)
 
-## 8. Git-Delta (global, einmalig)
+## 9. Git-Delta (global, einmalig)
 
 ```bash
 brew install git-delta
@@ -148,7 +198,7 @@ In `~/.gitconfig` hinzufügen:
     colorMoved = default
 ```
 
-## 9. Optional: Weitere CLI-Tools
+## 10. Optional: Weitere CLI-Tools
 
 ```bash
 brew install eza bat zoxide fzf fnm
@@ -160,7 +210,7 @@ brew install eza bat zoxide fzf fnm
 - `fzf` — Fuzzy-Finder
 - `fnm` — Schneller Node.js Version Manager
 
-## 10. Shell Aliases
+## 11. Shell Aliases
 
 Eigene Datei `~/.aliases` anlegen und in `~/.zshrc` sourcen:
 
@@ -199,7 +249,7 @@ alias cy="claude --dangerously-skip-permissions"
 alias nah="git reset --hard && git clean -df"
 ```
 
-## 11. Claude Code Deny Rules (global)
+## 12. Claude Code Deny Rules (global)
 
 In `~/.claude/settings.json` Deny Rules hinzufügen. Diese greifen auch im Bypass-Modus (`--dangerously-skip-permissions`) und blocken destruktive Befehle:
 

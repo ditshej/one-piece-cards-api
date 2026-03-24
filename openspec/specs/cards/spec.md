@@ -34,19 +34,25 @@ Each card SHALL belong to exactly one pack. The relationship SHALL be defined as
 - **AND** the pack's id is "OP01"
 
 ### Requirement: Card searchability
-Cards SHALL be searchable by color, category, cost, type, and effect text.
+Cards SHALL be searchable via API query parameters: color (`whereJsonContains`), category, cost, pack (`pack_id`), and free-text search on effect and trigger fields (`LIKE`).
 
 #### Scenario: Filter cards by color
-- GIVEN multiple cards with different colors exist
-- WHEN a request filters by color "Red"
-- THEN only cards containing "Red" in their colors array are returned
-- AND the response status is 200
+- **GIVEN** multiple cards with different colors exist
+- **WHEN** `GET /api/v1/cards?color=Red` is requested
+- **THEN** only cards containing "Red" in their colors array are returned
+- **AND** the response status is 200
 
-#### Scenario: Full-text search in effect text
-- GIVEN cards with various effect texts exist
-- WHEN a request searches for "draw 2 cards"
-- THEN cards whose effect text contains the search term are returned
-- AND the response status is 200
+#### Scenario: Filter cards by category
+- **GIVEN** cards with categories "Leader" and "Character" exist
+- **WHEN** `GET /api/v1/cards?category=Leader` is requested
+- **THEN** only Leader cards are returned
+- **AND** the response status is 200
+
+#### Scenario: Full-text search in effect and trigger text
+- **GIVEN** cards with various effect and trigger texts exist
+- **WHEN** `GET /api/v1/cards?search=draw` is requested
+- **THEN** cards whose effect or trigger text contains "draw" are returned
+- **AND** the response status is 200
 
 ### Requirement: Card uses string primary key
 The Card model SHALL use a non-incrementing string primary key (`id`), matching the vegapull card identifiers (e.g., "OP01-001", "ST01-012").

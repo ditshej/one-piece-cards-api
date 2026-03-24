@@ -22,13 +22,14 @@ Each pack SHALL have a one-to-many relationship with cards. The relationship SHA
 - **AND** each card has pack_id "OP01"
 
 ### Requirement: Pack listing
-The system SHALL provide a list of all available packs.
+The system SHALL provide a list of all available packs via the API, ordered by id.
 
 #### Scenario: List all packs
-- GIVEN multiple packs exist in the database
-- WHEN a request to list packs is made
-- THEN all packs are returned ordered by their id
-- AND the response status is 200
+- **GIVEN** multiple packs exist in the database
+- **WHEN** `GET /api/v1/packs` is requested
+- **THEN** all packs are returned ordered by their id
+- **AND** each pack includes id and name
+- **AND** the response status is 200
 
 ### Requirement: Pack uses string primary key
 The Pack model SHALL use a non-incrementing string primary key (`id`), matching the vegapull pack identifiers (e.g., "OP01", "ST01").

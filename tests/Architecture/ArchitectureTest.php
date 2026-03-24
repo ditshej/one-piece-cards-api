@@ -2,8 +2,4 @@
 
 arch()
     ->expect('App')
-    ->not->toUse(['dd', 'dump']);
-
-arch()
-    ->expect('App')
-    ->not->toUse(['env']);
+    ->not->toUse(['dd', 'dump', 'env']);

@@ -3,36 +3,23 @@
 use App\Models\Card;
 use App\Models\Pack;
 
-// --- Show endpoint ---
-
 it('returns 404 for a missing card', function () {
     $this->getJson('/api/v1/cards/INVALID-999')
         ->assertNotFound();
 });
 
-it('returns a single card on show', function () {
-    $pack = Pack::factory()->create(['id' => 'OP01']);
-    Card::factory()->for($pack)->create([
-        'id' => 'OP01-001',
-        'name' => 'Monkey.D.Luffy',
-    ]);
+it('does not respond on unversioned api path', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create();
 
-    $this->getJson('/api/v1/cards/OP01-001')
-        ->assertOk()
-        ->assertJsonPath('data.id', 'OP01-001')
-        ->assertJsonPath('data.name', 'Monkey.D.Luffy')
-        ->assertJsonPath('data.pack_id', 'OP01');
+    $this->getJson('/api/cards')->assertNotFound();
 });
-
-// --- Index endpoint: edge cases ---
 
 it('returns empty data array when no cards exist', function () {
     $this->getJson('/api/v1/cards')
         ->assertOk()
         ->assertJsonCount(0, 'data');
 });
-
-// --- Index endpoint: filters ---
 
 it('filters cards by color', function () {
     $pack = Pack::factory()->create();
@@ -89,8 +76,6 @@ it('combines multiple filters', function () {
     expect($response->json('data'))->toHaveCount(1);
 });
 
-// --- Index endpoint: search ---
-
 it('searches cards by effect text', function () {
     $pack = Pack::factory()->create();
     Card::factory()->for($pack)->create(['effect' => 'Draw 2 cards', 'trigger' => null]);
@@ -111,8 +96,6 @@ it('searches cards by trigger text', function () {
     expect($response->json('data'))->toHaveCount(1);
 });
 
-// --- Index endpoint: pagination ---
-
 it('paginates card results', function () {
     $pack = Pack::factory()->create();
     Card::factory()->for($pack)->count(20)->create();
@@ -130,10 +113,23 @@ it('returns second page of results', function () {
 
     $response = $this->getJson('/api/v1/cards?page=2')->assertOk();
 
-    expect($response->json('data'))->toHaveCount(5);
+    expect($response->json('data'))->toHaveCount(5)
+        ->and($response->json('meta.current_page'))->toBe(2);
 });
 
-// --- Index endpoint: happy path ---
+it('returns a single card on show', function () {
+    $pack = Pack::factory()->create(['id' => 'OP01']);
+    Card::factory()->for($pack)->create([
+        'id' => 'OP01-001',
+        'name' => 'Monkey.D.Luffy',
+    ]);
+
+    $this->getJson('/api/v1/cards/OP01-001')
+        ->assertOk()
+        ->assertJsonPath('data.id', 'OP01-001')
+        ->assertJsonPath('data.name', 'Monkey.D.Luffy')
+        ->assertJsonPath('data.pack_id', 'OP01');
+});
 
 it('returns paginated cards on index', function () {
     $pack = Pack::factory()->create();

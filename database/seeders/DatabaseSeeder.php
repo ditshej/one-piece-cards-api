@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Card;
+use App\Models\Pack;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -15,11 +17,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        Pack::factory()
+            ->count(3)
+            ->has(Card::factory()->count(12))
+            ->create();
     }
 }

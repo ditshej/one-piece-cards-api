@@ -18,12 +18,13 @@ class CardFactory extends Factory
      */
     public function definition(): array
     {
-        $pack = Pack::factory()->create();
-        $number = str_pad((string) fake()->unique()->numberBetween(1, 150), 3, '0', STR_PAD_LEFT);
-
         return [
-            'id' => $pack->id.'-'.$number,
-            'pack_id' => $pack->id,
+            'pack_id' => Pack::factory(),
+            'id' => function (array $attributes) {
+                $number = str_pad((string) fake()->unique()->numberBetween(1, 150), 3, '0', STR_PAD_LEFT);
+
+                return $attributes['pack_id'].'-'.$number;
+            },
             'name' => fake()->name(),
             'rarity' => fake()->randomElement(['C', 'UC', 'R', 'SR', 'SEC', 'L', 'P']),
             'category' => fake()->randomElement(['Leader', 'Character', 'Event', 'Stage']),

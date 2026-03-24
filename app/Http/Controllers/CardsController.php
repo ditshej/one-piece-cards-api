@@ -17,7 +17,7 @@ class CardsController extends Controller
             ->when($request->query('cost'), fn ($q, $cost) => $q->where('cost', $cost))
             ->when($request->query('pack'), fn ($q, $pack) => $q->where('pack_id', $pack))
             ->when($request->query('search'), fn ($q, $search) => $q->where(
-                fn ($q) => $q->where('effect', 'LIKE', "%{$search}%")
+                fn ($sub) => $sub->where('effect', 'LIKE', "%{$search}%")
                     ->orWhere('trigger', 'LIKE', "%{$search}%")
             ));
 

@@ -223,3 +223,56 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - Do NOT delete tests without approval.
 
 </laravel-boost-guidelines>
+
+## Git + OpenSpec Feature Branch Flow
+
+Jede OpenSpec-Change bekommt einen eigenen Feature-Branch. Kein Squash-Merge — die volle History bleibt auf `main` erhalten.
+
+### Branch-Namenskonvention
+
+```
+feat/<change-name>      # z.B. feat/card-management
+```
+
+### Workflow pro Change
+
+```bash
+# 1. Branch erstellen
+git checkout -b feat/<change-name>
+
+# 2. OpenSpec Change erstellen & planen
+openspec new change "<change-name>"
+# → proposal.md, specs/, design.md, tasks.md erstellen
+# → Commit: "docs: add openspec change <change-name>"
+
+# 3. Implementation (TDD)
+# /opsx:apply — Tasks abarbeiten
+# → Commit(s): "feat: ...", "test: ...", etc.
+
+# 4. Code Review
+# a) laravel-simplifier Agent — automatisches Review
+# b) Findings fixen, dann committen
+# c) Agent gibt Code-Übersicht + manuelle Testanleitung
+# d) User reviewt selbst — erst nach User-OK weitermachen!
+
+# 5. Archivierung
+# /opsx:archive — Change abschliessen, Specs mergen
+# → Commit: "docs: archive <change-name> change"
+
+# 6. Merge nach main (kein Squash!)
+git checkout main
+git merge feat/<change-name>
+git push
+git branch -d feat/<change-name>
+```
+
+### Resultierende History auf main
+
+```
+* docs: archive <change-name> change
+* refactor: apply simplifier findings
+* feat: add <feature description>
+* docs: add openspec change <change-name>
+```
+
+Jedes Feature hat 3-4 Commits: Planung → Implementation → Review (optional) → Archivierung.

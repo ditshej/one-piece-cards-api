@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['id', 'name'])]
+#[Fillable(['id', 'name', 'label'])]
 class Pack extends Model
 {
     /** @use HasFactory<PackFactory> */

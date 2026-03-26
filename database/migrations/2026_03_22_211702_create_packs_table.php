@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('packs', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->string('name');
+            $table->string('label')->nullable();
             $table->timestamps();
         });
     }

@@ -13,6 +13,7 @@ class PackResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'label' => $this->label,
             'cards' => CardResource::collection($this->whenLoaded('cards')),
         ];
     }

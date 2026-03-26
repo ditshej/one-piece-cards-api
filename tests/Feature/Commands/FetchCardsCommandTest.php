@@ -76,3 +76,15 @@ it('passes --language english to vegapull', function () {
 
     Process::assertRan(fn ($process) => str_contains($process->command, '--language english'));
 });
+
+it('warns and continues when a single pack card fetch fails', function () {
+    Process::fake([
+        '* --version' => Process::result(output: 'vega 1.2.1'),
+        '* pull *packs' => Process::result(output: 'downloaded 1 packs'),
+        '* pull *cards *' => Process::result(exitCode: 1),
+    ]);
+
+    $this->artisan('cards:fetch')
+        ->expectsOutputToContain('Failed to fetch cards')
+        ->assertSuccessful();
+});

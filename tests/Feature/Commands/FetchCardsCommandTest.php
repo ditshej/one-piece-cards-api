@@ -1,10 +1,16 @@
 <?php
 
+use App\Models\Card;
+use App\Models\Pack;
 use Illuminate\Support\Facades\Process;
+
+beforeEach(function () {
+    config(['import.vegapull_path' => __DIR__.'/../../Fixtures/vegapull']);
+});
 
 it('fails when vegapull binary is not found', function () {
     Process::fake([
-        'which *' => Process::result(exitCode: 1),
+        '* --version' => Process::result(exitCode: 1),
     ]);
 
     $this->artisan('cards:fetch')
@@ -14,8 +20,8 @@ it('fails when vegapull binary is not found', function () {
 
 it('fails when vegapull scrape fails', function () {
     Process::fake([
-        'which *' => Process::result(output: '/usr/local/bin/vega'),
-        'vega *' => Process::result(
+        '* --version' => Process::result(output: 'vega 1.2.1'),
+        '* pull all *' => Process::result(
             errorOutput: 'Connection refused',
             exitCode: 1,
         ),
@@ -27,26 +33,26 @@ it('fails when vegapull scrape fails', function () {
 });
 
 it('fetches and imports cards successfully', function () {
-    config(['import.vegapull_path' => __DIR__.'/../../Fixtures/vegapull']);
-
     Process::fake([
-        'which *' => Process::result(output: '/usr/local/bin/vega'),
-        'vega *' => Process::result(output: 'Done'),
+        '* --version' => Process::result(output: 'vega 1.2.1'),
+        '* pull all *' => Process::result(output: 'Done'),
     ]);
 
     $this->artisan('cards:fetch')
         ->assertSuccessful();
+
+    expect(Pack::count())->toBe(1)
+        ->and(Card::count())->toBe(3);
 
     Process::assertRan(fn ($process) => str_contains($process->command, 'vega pull all'));
 });
 
 it('uses configured binary path', function () {
     config(['import.vegapull_binary' => '/custom/path/vega']);
-    config(['import.vegapull_path' => __DIR__.'/../../Fixtures/vegapull']);
 
     Process::fake([
-        'which *' => Process::result(output: '/custom/path/vega'),
-        '/custom/path/vega *' => Process::result(output: 'Done'),
+        '* --version' => Process::result(output: 'vega 1.2.1'),
+        '* pull all *' => Process::result(output: 'Done'),
     ]);
 
     $this->artisan('cards:fetch')

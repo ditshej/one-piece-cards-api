@@ -17,9 +17,9 @@ class FetchCardsCommand extends Command
         $binary = config('import.vegapull_binary');
         $path = config('import.vegapull_path');
 
-        $whichResult = Process::run("which {$binary}");
+        $versionResult = Process::run("{$binary} --version");
 
-        if ($whichResult->failed()) {
+        if ($versionResult->failed()) {
             $this->error("Vegapull binary '{$binary}' not found. Install with: cargo install vegapull");
 
             return self::FAILURE;

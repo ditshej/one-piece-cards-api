@@ -36,13 +36,34 @@ The system SHALL provide an Artisan command `cards:import {path?}` that reads ve
 - **AND** no database changes are made
 
 ### Requirement: Vegapull Integration
-The system SHALL provide an optional Artisan command that executes vegapull to fetch fresh JSON data before importing.
+The system SHALL provide an Artisan command `cards:fetch` that executes the vegapull binary to scrape fresh card data from Bandai's official card list and imports the results into the database. The command SHALL use the binary path from `config('import.vegapull_binary')` (default: `vega`) and output JSON files to `config('import.vegapull_path')`. After scraping, the command SHALL call `cards:import` to ingest the data.
 
 #### Scenario: Fetch and import new sets
-- GIVEN vegapull is installed on the system
-- WHEN the fetch-and-import command is executed
-- THEN vegapull scrapes the latest card data from Bandai
-- AND the scraped JSON files are imported into the database
+- **GIVEN** vegapull (`vega`) is installed and available in PATH
+- **WHEN** `php artisan cards:fetch` is executed
+- **THEN** vegapull scrapes the latest card data from Bandai
+- **AND** the scraped JSON files are saved to the configured vegapull path
+- **AND** `cards:import` is called to import the data into the database
+- **AND** a summary of imported cards is displayed
+
+#### Scenario: Vegapull binary not found
+- **GIVEN** the `vega` binary is not installed or not in PATH
+- **WHEN** `php artisan cards:fetch` is executed
+- **THEN** an error message is displayed indicating the binary was not found
+- **AND** the command exits with a failure exit code
+- **AND** no import is attempted
+
+#### Scenario: Vegapull scrape fails
+- **GIVEN** vegapull is installed but the scrape fails (network error, site unavailable)
+- **WHEN** `php artisan cards:fetch` is executed
+- **THEN** an error message is displayed with the failure details
+- **AND** the command exits with a failure exit code
+- **AND** no import is attempted
+
+#### Scenario: Fetch with custom binary path
+- **GIVEN** `config('import.vegapull_binary')` is set to `/usr/local/bin/vega`
+- **WHEN** `php artisan cards:fetch` is executed
+- **THEN** the command uses `/usr/local/bin/vega` to execute the scrape
 
 ### Requirement: Scheduled Import
 The system SHALL support a config-gated scheduled command that periodically runs `cards:import` to import card data. The schedule SHALL be controlled by the `import.schedule_enabled` configuration value, defaulting to `false`. When enabled, the system SHALL run `cards:import` weekly using the default import path.

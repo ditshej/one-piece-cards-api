@@ -53,21 +53,7 @@ class ImportCardsCommand extends Command
             foreach ($cards as $cardData) {
                 Card::updateOrCreate(
                     ['id' => $cardData['id']],
-                    [
-                        'pack_id' => $cardData['pack_id'],
-                        'name' => $cardData['name'],
-                        'rarity' => $cardData['rarity'],
-                        'category' => $cardData['category'],
-                        'colors' => $cardData['colors'],
-                        'cost' => $cardData['cost'],
-                        'power' => $cardData['power'],
-                        'counter' => $cardData['counter'],
-                        'attributes' => $cardData['attributes'],
-                        'types' => $cardData['types'],
-                        'effect' => $cardData['effect'],
-                        'trigger' => $cardData['trigger'],
-                        'img_url' => $cardData['img_full_url'] ?? $cardData['img_url'],
-                    ],
+                    $this->cardAttributes($cardData),
                 );
 
                 $importedCardCount++;
@@ -79,7 +65,29 @@ class ImportCardsCommand extends Command
         return self::SUCCESS;
     }
 
-    /** @return array<string, mixed> */
+    /** @param array<string, mixed> $cardData */
+    private function cardAttributes(array $cardData): array
+    {
+        return [
+            'pack_id' => $cardData['pack_id'],
+            'name' => $cardData['name'],
+            'rarity' => $cardData['rarity'],
+            'category' => $cardData['category'],
+            'colors' => $cardData['colors'],
+            'cost' => $cardData['cost'],
+            'power' => $cardData['power'],
+            'counter' => $cardData['counter'],
+            'attributes' => $cardData['attributes'],
+            'types' => $cardData['types'],
+            'effect' => $cardData['effect'],
+            'trigger' => $cardData['trigger'],
+            'img_url' => $cardData['img_full_url'] ?? $cardData['img_url'],
+        ];
+    }
+
+    /**
+     * @return array<string, array{id: string, raw_title: string, title_parts: array{prefix: string, title: string, label: string}}>
+     */
     private function loadPacks(string $jsonPath): array
     {
         $packsFile = $jsonPath.'/packs.json';

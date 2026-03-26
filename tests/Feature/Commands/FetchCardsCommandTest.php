@@ -18,10 +18,10 @@ it('fails when vegapull binary is not found', function () {
         ->assertFailed();
 });
 
-it('fails when vegapull scrape fails', function () {
+it('fails when packs fetch fails', function () {
     Process::fake([
         '* --version' => Process::result(output: 'vega 1.2.1'),
-        '* pull all *' => Process::result(
+        '* pull *packs' => Process::result(
             errorOutput: 'Connection refused',
             exitCode: 1,
         ),
@@ -32,10 +32,11 @@ it('fails when vegapull scrape fails', function () {
         ->assertFailed();
 });
 
-it('fetches and imports cards successfully', function () {
+it('fetches packs then cards and imports successfully', function () {
     Process::fake([
         '* --version' => Process::result(output: 'vega 1.2.1'),
-        '* pull all *' => Process::result(output: 'Done'),
+        '* pull *packs' => Process::result(output: 'downloaded 1 packs'),
+        '* pull *cards *' => Process::result(output: 'fetched cards'),
     ]);
 
     $this->artisan('cards:fetch')
@@ -44,7 +45,8 @@ it('fetches and imports cards successfully', function () {
     expect(Pack::count())->toBe(1)
         ->and(Card::count())->toBe(3);
 
-    Process::assertRan(fn ($process) => str_contains($process->command, 'vega pull all'));
+    Process::assertRan(fn ($process) => str_contains($process->command, 'pull') && str_contains($process->command, 'packs'));
+    Process::assertRan(fn ($process) => str_contains($process->command, 'pull') && str_contains($process->command, 'cards'));
 });
 
 it('uses configured binary path', function () {
@@ -52,11 +54,25 @@ it('uses configured binary path', function () {
 
     Process::fake([
         '* --version' => Process::result(output: 'vega 1.2.1'),
-        '* pull all *' => Process::result(output: 'Done'),
+        '* pull *packs' => Process::result(output: 'downloaded 1 packs'),
+        '* pull *cards *' => Process::result(output: 'fetched cards'),
     ]);
 
     $this->artisan('cards:fetch')
         ->assertSuccessful();
 
-    Process::assertRan(fn ($process) => str_contains($process->command, '/custom/path/vega pull all'));
+    Process::assertRan(fn ($process) => str_contains($process->command, '/custom/path/vega pull'));
+});
+
+it('passes --language english to vegapull', function () {
+    Process::fake([
+        '* --version' => Process::result(output: 'vega 1.2.1'),
+        '* pull *packs' => Process::result(output: 'downloaded 1 packs'),
+        '* pull *cards *' => Process::result(output: 'fetched cards'),
+    ]);
+
+    $this->artisan('cards:fetch')
+        ->assertSuccessful();
+
+    Process::assertRan(fn ($process) => str_contains($process->command, '--language english'));
 });

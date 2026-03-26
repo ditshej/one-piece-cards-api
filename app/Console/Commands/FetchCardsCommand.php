@@ -6,6 +6,7 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 
 #[Signature('cards:fetch')]
@@ -25,18 +26,46 @@ class FetchCardsCommand extends Command
             return self::FAILURE;
         }
 
-        $this->info('Fetching card data from Bandai...');
+        $this->info('Fetching pack list from Bandai...');
 
-        $result = Process::timeout(300)->run("{$binary} pull all -o {$path}");
+        $packsResult = Process::timeout(60)->run("{$binary} pull --language english -o {$path} packs");
 
-        if ($result->failed()) {
-            $this->error('Vegapull scrape failed: '.$result->errorOutput());
+        if ($packsResult->failed()) {
+            $this->error('Failed to fetch packs: '.$packsResult->errorOutput());
 
             return self::FAILURE;
+        }
+
+        $packIds = $this->getPackIds($path);
+
+        $this->info('Fetching cards for '.count($packIds).' packs...');
+
+        foreach ($packIds as $packId) {
+            $result = Process::timeout(120)->run("{$binary} pull --language english -o {$path} cards {$packId}");
+
+            if ($result->failed()) {
+                $this->warn("Failed to fetch cards for pack {$packId}, skipping.");
+
+                continue;
+            }
         }
 
         Artisan::call('cards:import', [], $this->output);
 
         return self::SUCCESS;
+    }
+
+    /** @return list<string> */
+    private function getPackIds(string $path): array
+    {
+        $packsFile = $path.'/json/packs.json';
+
+        if (! File::exists($packsFile)) {
+            return [];
+        }
+
+        $packs = json_decode(File::get($packsFile), true) ?? [];
+
+        return array_keys($packs);
     }
 }

@@ -21,8 +21,9 @@ class PackFactory extends Factory
         $number = str_pad((string) fake()->unique()->numberBetween(1, 30), 2, '0', STR_PAD_LEFT);
 
         return [
-            'id' => $prefix.$number,
+            'id' => (string) fake()->unique()->numberBetween(569001, 569999),
             'name' => fake()->words(3, true),
+            'label' => $prefix.'-'.$number,
         ];
     }
 }

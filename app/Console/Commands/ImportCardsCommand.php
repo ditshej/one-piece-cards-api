@@ -16,18 +16,21 @@ class ImportCardsCommand extends Command
     public function handle(): int
     {
         $path = $this->argument('path') ?? config('import.vegapull_path');
+        $jsonPath = $path.'/json';
 
-        $files = File::glob($path.'/*.json');
+        $packs = $this->loadPacks($jsonPath);
 
-        if (empty($files)) {
-            $this->warn('No JSON files found in: '.$path);
+        $cardFiles = File::glob($jsonPath.'/cards_*.json');
+
+        if (empty($cardFiles)) {
+            $this->warn('No card JSON files found in: '.$jsonPath);
 
             return self::SUCCESS;
         }
 
         $importedCardCount = 0;
 
-        foreach ($files as $file) {
+        foreach ($cardFiles as $file) {
             $cards = json_decode(File::get($file), true);
 
             if (empty($cards)) {
@@ -37,11 +40,14 @@ class ImportCardsCommand extends Command
             }
 
             $packId = $cards[0]['pack_id'];
-            $packName = $cards[0]['pack_name'] ?? $packId;
+            $packData = $packs[$packId] ?? null;
 
             Pack::updateOrCreate(
                 ['id' => $packId],
-                ['name' => $packName],
+                [
+                    'name' => $packData['title_parts']['title'] ?? $packId,
+                    'label' => $packData['title_parts']['label'] ?? null,
+                ],
             );
 
             foreach ($cards as $cardData) {
@@ -60,7 +66,7 @@ class ImportCardsCommand extends Command
                         'types' => $cardData['types'],
                         'effect' => $cardData['effect'],
                         'trigger' => $cardData['trigger'],
-                        'img_url' => $cardData['img_url'],
+                        'img_url' => $cardData['img_full_url'] ?? $cardData['img_url'],
                     ],
                 );
 
@@ -68,8 +74,20 @@ class ImportCardsCommand extends Command
             }
         }
 
-        $this->info("Imported {$importedCardCount} cards from ".count($files).' file(s).');
+        $this->info("Imported {$importedCardCount} cards from ".count($cardFiles).' file(s).');
 
         return self::SUCCESS;
+    }
+
+    /** @return array<string, mixed> */
+    private function loadPacks(string $jsonPath): array
+    {
+        $packsFile = $jsonPath.'/packs.json';
+
+        if (! File::exists($packsFile)) {
+            return [];
+        }
+
+        return json_decode(File::get($packsFile), true) ?? [];
     }
 }

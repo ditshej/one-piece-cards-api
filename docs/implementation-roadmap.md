@@ -17,7 +17,7 @@ Change 1: pack-and-card-models
 
 ## Changes
 
-### 1. `pack-and-card-models`
+### ~~1. `pack-and-card-models`~~ ✅
 
 Foundation layer. Models, migrations, factories for Pack and Card.
 
@@ -25,7 +25,7 @@ Foundation layer. Models, migrations, factories for Pack and Card.
 - **Scope:** Enable RefreshDatabase in Pest.php. Create Pack model (string PK, has many cards), Card model (string PK, belongs to pack, JSON casts for colors/attributes/types). Factories for both.
 - **Conventions:** `#[Fillable]` attributes (Laravel 13), `casts()` method, `$incrementing = false`, only `up()` in migrations.
 
-### 2. `import-cards-command`
+### ~~2. `import-cards-command`~~ ✅
 
 Artisan command `cards:import` to ingest vegapull JSON files.
 
@@ -33,7 +33,7 @@ Artisan command `cards:import` to ingest vegapull JSON files.
 - **Scope:** Read JSON files from a path, upsert packs and cards. Idempotent. Display summary of imported/updated counts.
 - **Depends on:** Change 1
 
-### 3. `packs-api-endpoints`
+### ~~3. `packs-api-endpoints`~~ ✅
 
 API infrastructure + Packs CRUD endpoints.
 
@@ -41,7 +41,7 @@ API infrastructure + Packs CRUD endpoints.
 - **Scope:** Create `routes/api.php` with `/v1` prefix. Register in `bootstrap/app.php`. PackResource, CardResource. PacksController (index, show). 404 handling.
 - **Depends on:** Change 1
 
-### 4. `cards-api-endpoints`
+### ~~4. `cards-api-endpoints`~~ ✅
 
 Cards CRUD with filtering, search, and pagination.
 
@@ -49,7 +49,7 @@ Cards CRUD with filtering, search, and pagination.
 - **Scope:** CardsController (index with pagination, show). Filters: color (`whereJsonContains`), category, cost, pack. Search: effect text (`LIKE`). Combined filters.
 - **Depends on:** Change 3
 
-### 5. `seeder-schedule-polish`
+### ~~5. `seeder-schedule-polish`~~ ✅
 
 Operational polish: seeder, scheduled import, architecture tests.
 
@@ -69,7 +69,7 @@ Change 7: metanet-deployment (Server-Setup)
     └──→ Change 8: data-sync-command (braucht laufendes Deployment)
 ```
 
-### 6. `vegapull-fetch-command`
+### ~~6. `vegapull-fetch-command`~~ ✅
 
 Artisan Command `cards:fetch` das vegapull ausfuehrt und direkt importiert.
 

@@ -1,10 +1,13 @@
 #!/bin/sh
+set -e
+
+PHP=/opt/php83/bin/php
 
 git pull origin main
 
-/opt/php83/bin/php /usr/bin/composer install --no-interaction --optimize-autoloader --no-dev
+$PHP /usr/bin/composer install --no-interaction --optimize-autoloader --no-dev
 
-/opt/php83/bin/php artisan migrate --force
+$PHP artisan migrate --force
 
-/opt/php83/bin/php artisan optimize:clear
-/opt/php83/bin/php artisan optimize
+$PHP artisan optimize:clear
+$PHP artisan optimize

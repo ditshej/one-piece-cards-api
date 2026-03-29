@@ -10,4 +10,3 @@ $PHP /usr/bin/composer install --no-interaction --optimize-autoloader --no-dev
 $PHP artisan migrate --force
 
 $PHP artisan optimize:clear
-$PHP artisan optimize

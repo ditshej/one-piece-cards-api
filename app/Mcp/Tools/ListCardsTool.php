@@ -14,30 +14,8 @@ class ListCardsTool extends Tool
 {
     public function handle(Request $request): Response
     {
-        $keyword = $request->get('keyword');
-
         $cards = Card::query()
-            ->when($request->get('color'), fn ($q, $color) => $q->whereJsonContains('colors', $color))
-            ->when($request->get('category'), fn ($q, $category) => $q->where('category', $category))
-            ->when($request->get('cost'), fn ($q, $cost) => $q->where('cost', $cost))
-            ->when($request->get('cost_min'), fn ($q, $min) => $q->where('cost', '>=', $min))
-            ->when($request->get('cost_max'), fn ($q, $max) => $q->where('cost', '<=', $max))
-            ->when($request->get('power_min'), fn ($q, $min) => $q->where('power', '>=', $min))
-            ->when($request->get('power_max'), fn ($q, $max) => $q->where('power', '<=', $max))
-            ->when($request->get('pack_label'), fn ($q, $label) => $q->whereHas('pack', fn ($r) => $r->where('label', $label)))
-            ->when($request->get('search'), fn ($q, $search) => $q->where(
-                fn ($sub) => $sub->where('effect', 'LIKE', "%{$search}%")
-                    ->orWhere('trigger', 'LIKE', "%{$search}%")
-            ))
-            ->when($request->get('name'), fn ($q, $name) => $q->where('name', 'LIKE', "%{$name}%"))
-            ->when($request->get('rarity'), fn ($q, $rarity) => $q->where('rarity', $rarity))
-            ->when($request->get('attribute'), fn ($q, $attribute) => $q->whereJsonContains('attributes', $attribute))
-            ->when($request->get('type'), fn ($q, $type) => $q->whereJsonContains('types', $type))
-            ->when($keyword, fn ($q) => $q->where(
-                fn ($sub) => $sub->where('effect', 'LIKE', "%[{$keyword}]%")
-                    ->orWhere('trigger', 'LIKE', "%[{$keyword}]%")
-            ))
-            ->when($request->get('alt_art'), fn ($q) => $q->whereRaw("INSTR(id, '_p') > 0"))
+            ->applyFilters($request->all())
             ->limit($request->get('limit', 20))
             ->get();
 

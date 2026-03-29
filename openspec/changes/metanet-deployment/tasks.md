@@ -13,15 +13,15 @@
 ## 3. Server Setup (Manual, One-Time)
 
 - [x] 3.1 SSH into Metanet (`sshm`) and verify PHP 8.4 binary path (`ls /usr/bin/php*`) and Composer path
-- [ ] 3.2 Clone the repo into `~/op-cards.ditshej.ch` on the server
-- [ ] 3.3 Set Metanet document root to `~/op-cards.ditshej.ch/public` in the hosting panel
-- [ ] 3.4 Create `.env` on the server with production values (APP_KEY, APP_URL, APP_ENV=production, APP_DEBUG=false, DB_CONNECTION=sqlite)
-- [ ] 3.5 Run `php artisan key:generate` and `php artisan migrate --force` on the server
-- [ ] 3.6 Configure DNS: add A-Record `op-cards` → Metanet IP at the domain registrar
+- [x] 3.2 Clone the repo into `~/op-cards.ditshej.ch` on the server
+- [x] 3.3 Set Metanet document root to `~/op-cards.ditshej.ch/public` in the hosting panel
+- [x] 3.4 Create `.env` on the server with production values (APP_KEY, APP_URL, APP_ENV=production, APP_DEBUG=false, DB_CONNECTION=sqlite)
+- [x] 3.5 Run `php artisan key:generate` and `php artisan migrate --force` on the server
+- [x] 3.6 Configure DNS: add A-Record `op-cards` → Metanet IP at the domain registrar
 
 ## 4. First Deploy & Verification
 
-- [ ] 4.1 Create local `.env.deploy` with real Metanet SSH credentials
-- [ ] 4.2 Run `bash deploy.sh` — verify it connects and completes without errors
-- [ ] 4.3 Verify `https://op-cards.ditshej.ch/up` returns HTTP 200
-- [ ] 4.4 Verify `https://op-cards.ditshej.ch/v1/packs` returns JSON
+- [x] 4.1 Create local `.env.deploy` with real Metanet SSH credentials
+- [x] 4.2 Run `bash deploy.sh` — verify it connects and completes without errors
+- [x] 4.3 Verify `https://op-cards.ditshej.ch/up` returns HTTP 200
+- [x] 4.4 Verify `https://op-cards.ditshej.ch/v1/packs` returns JSON

@@ -30,7 +30,7 @@ class CardFactory extends Factory
             'rarity' => fake()->randomElement(['C', 'UC', 'R', 'SR', 'SEC', 'L', 'P']),
             'category' => fake()->randomElement(['Leader', 'Character', 'Event', 'Stage']),
             'colors' => [fake()->randomElement(['Red', 'Green', 'Blue', 'Purple', 'Black', 'Yellow'])],
-            'cost' => fake()->numberBetween(0, 10),
+            'cost' => fake()->numberBetween(1, 10),
             'power' => fake()->randomElement([null, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000]),
             'counter' => fake()->randomElement([null, 1000, 2000]),
             'attributes' => [fake()->randomElement(['Strike', 'Ranged', 'Wisdom', 'Slash'])],

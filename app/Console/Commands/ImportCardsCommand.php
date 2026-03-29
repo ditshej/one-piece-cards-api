@@ -74,7 +74,7 @@ class ImportCardsCommand extends Command
             'rarity' => $cardData['rarity'],
             'category' => $cardData['category'],
             'colors' => $cardData['colors'],
-            'cost' => $cardData['cost'],
+            'cost' => ($cardData['cost'] === null && $cardData['category'] === 'Event') ? 0 : $cardData['cost'],
             'power' => $cardData['power'],
             'counter' => $cardData['counter'],
             'attributes' => $cardData['attributes'],

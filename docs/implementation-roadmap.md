@@ -77,7 +77,7 @@ Artisan Command `cards:fetch` das vegapull ausfuehrt und direkt importiert.
 - **Scope:** Neues Command `cards:fetch`: prueft ob `vega` Binary verfuegbar ist, fuehrt `vega pull all` aus, ruft `cards:import` auf. Config-Key `import.vegapull_binary`.
 - **Depends on:** Change 2
 
-### 7. `metanet-deployment`
+### ~~7. `metanet-deployment`~~ ✅
 
 Laravel-App auf Metanet Shared Hosting deployen.
 
@@ -85,7 +85,7 @@ Laravel-App auf Metanet Shared Hosting deployen.
 - **Scope:** Server-Umgebung erkunden (PHP-Version, Pfade, Web Root). Deploy-Scripts (`deploy.sh` lokal, `_deploy.sh` remote): git pull, composer install, artisan optimize. Analog zu `statamic-ferienspasswil`.
 - **Depends on:** Changes 1-5 (komplette API)
 
-### 8. `data-sync-command`
+### ~~8. `data-sync-command`~~ ✅
 
 Artisan Command `cards:sync` das die lokale SQLite-DB auf Metanet hochlaedt.
 

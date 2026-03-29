@@ -92,11 +92,26 @@ The system SHALL support filtering cards by TCG keyword, matching `[Keyword]` in
 
 ---
 
+### Requirement: Filter by card_set
+The system SHALL support filtering cards by `card_set` using an exact match on the derived `card_set` column.
+
+#### Scenario: Filter cards by card_set
+- **GIVEN** cards from sets "OP01" and "OP02" exist
+- **WHEN** `GET /api/v1/cards?card_set=OP01` is called
+- **THEN** only cards with `card_set` "OP01" are returned
+
+#### Scenario: Filter by card_set with no results
+- **GIVEN** no cards from set "OP99" exist
+- **WHEN** `GET /api/v1/cards?card_set=OP99` is called
+- **THEN** an empty result set is returned with status 200
+
+---
+
 ### Requirement: Filter alt art cards
-The system SHALL support filtering to only alt art cards (those with `_p` suffix in their ID).
+The system SHALL support filtering to only alt art cards using the `alt_art_variant` column (non-null value indicates an alt art card).
 
 #### Scenario: Filter alt art cards
-- **GIVEN** cards "OP13-113" and "OP13-113_p1" exist
+- **GIVEN** cards "OP13-113" (alt_art_variant null) and "OP13-113_p1" (alt_art_variant "p1") exist
 - **WHEN** `GET /api/v1/cards?alt_art=true` is called
 - **THEN** only "OP13-113_p1" is returned
 

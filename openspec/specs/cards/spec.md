@@ -19,10 +19,18 @@ The system SHALL store card data with the following attributes:
 - `effect` (text, nullable) — Card effect text
 - `trigger` (text, nullable) — Trigger effect text
 - `img_url` (string) — URL to the card image on the official Bandai site
+- `card_set` (string, nullable) — Derived set identifier (e.g., "OP01", "ST01") extracted from the card's `id`
+- `alt_art_variant` (string, nullable) — Alt art variant suffix extracted from the card's `id` (e.g., "p1", "p2"); null for non-alt-art cards
 
 #### Scenario: Create card with all attributes
 - **WHEN** a card is created with all required attributes
 - **THEN** the card is persisted with the correct values for each field
+
+#### Scenario: card_set and alt_art_variant derived automatically
+- **GIVEN** a card with id "OP01-001" is created
+- **THEN** `card_set` is "OP01" and `alt_art_variant` is null
+- **GIVEN** a card with id "OP13-113_p1" is created
+- **THEN** `card_set` is "OP13" and `alt_art_variant` is "p1"
 
 ### Requirement: Card belongs to Pack
 Each card SHALL belong to exactly one pack. The relationship SHALL be defined as a `belongsTo` Eloquent relationship on the Card model, with a foreign key `pack_id` referencing the Pack model.

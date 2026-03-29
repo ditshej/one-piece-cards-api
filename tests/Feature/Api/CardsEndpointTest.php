@@ -282,6 +282,17 @@ it('combines pack label, color, and rarity filters', function () {
     expect($response->json('data'))->toHaveCount(1);
 });
 
+it('filters cards by cost=0 correctly (zero is a valid cost)', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['cost' => 0]);
+    Card::factory()->for($pack)->create(['cost' => 3]);
+
+    $response = $this->withHeaders(withApiKey())->getJson('/api/v1/cards?cost=0')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(1)
+        ->and($response->json('data.0.cost'))->toBe(0);
+});
+
 it('returns 422 for non-numeric cost_min', function () {
     $this->withHeaders(withApiKey())->getJson('/api/v1/cards?cost_min=abc')
         ->assertUnprocessable();

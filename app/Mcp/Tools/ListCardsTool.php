@@ -42,6 +42,7 @@ class ListCardsTool extends Tool
             'attribute' => $schema->string()->nullable()->description('Filter by attribute: Strike, Slash, Ranged, Wisdom, Special'),
             'type' => $schema->string()->nullable()->description('Filter by type/archetype, e.g. "Egghead", "Straw Hat Crew"'),
             'keyword' => $schema->string()->nullable()->description('Filter by TCG keyword, e.g. "Blocker" searches for [Blocker] in effect/trigger'),
+            'card_set' => $schema->string()->nullable()->description('Filter by origin set (ID prefix), e.g. "OP03" — returns all cards from that set regardless of which pack they appear in'),
             'alt_art' => $schema->boolean()->nullable()->description('Set to true to return only alt art cards'),
             'limit' => $schema->integer()->nullable()->description('Number of results to return (default 20, max 100)'),
         ];

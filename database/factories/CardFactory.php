@@ -26,6 +26,12 @@ class CardFactory extends Factory
 
                 return $prefix.'-'.$number;
             },
+            'card_set' => function (array $attributes) {
+                return explode('-', $attributes['id'])[0];
+            },
+            'alt_art_variant' => function (array $attributes) {
+                return preg_match('/_p(\d+)$/', $attributes['id'], $m) ? (int) $m[1] : null;
+            },
             'name' => fake()->name(),
             'rarity' => fake()->randomElement(['C', 'UC', 'R', 'SR', 'SEC', 'L', 'P']),
             'category' => fake()->randomElement(['Leader', 'Character', 'Event', 'Stage']),

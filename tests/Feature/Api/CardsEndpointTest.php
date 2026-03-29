@@ -139,7 +139,7 @@ it('returns paginated cards on index', function () {
         ->assertOk()
         ->assertJsonCount(3, 'data')
         ->assertJsonStructure([
-            'data' => [['id', 'pack_id', 'name', 'rarity', 'category', 'colors', 'cost', 'power', 'counter', 'attributes', 'types', 'effect', 'trigger', 'img_url']],
+            'data' => [['id', 'pack_id', 'card_set', 'name', 'rarity', 'category', 'colors', 'cost', 'power', 'counter', 'attributes', 'types', 'effect', 'trigger', 'img_url', 'alt_art_variant']],
             'links',
             'meta',
         ]);
@@ -257,6 +257,32 @@ it('filters alt art cards only', function () {
 
     expect($response->json('data'))->toHaveCount(1)
         ->and($response->json('data.0.id'))->toBe('OP13-113_p1');
+});
+
+it('filters cards by card_set', function () {
+    $pack1 = Pack::factory()->create();
+    $pack2 = Pack::factory()->create();
+    Card::factory()->for($pack1)->create(['id' => 'OP03-001']);
+    Card::factory()->for($pack1)->create(['id' => 'OP03-002']);
+    Card::factory()->for($pack2)->create(['id' => 'OP01-001']);
+
+    $response = $this->withHeaders(withApiKey())->getJson('/api/v1/cards?card_set=OP03')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('returns card_set and alt_art_variant in response', function () {
+    $pack = Pack::factory()->create(['id' => 'OP13']);
+    Card::factory()->for($pack)->create(['id' => 'OP13-113']);
+    Card::factory()->for($pack)->create(['id' => 'OP13-113_p2']);
+
+    $response = $this->withHeaders(withApiKey())->getJson('/api/v1/cards?card_set=OP13')->assertOk();
+
+    $data = collect($response->json('data'))->keyBy('id');
+    expect($data['OP13-113']['card_set'])->toBe('OP13')
+        ->and($data['OP13-113']['alt_art_variant'])->toBeNull()
+        ->and($data['OP13-113_p2']['card_set'])->toBe('OP13')
+        ->and($data['OP13-113_p2']['alt_art_variant'])->toBe(2);
 });
 
 it('respects per_page parameter', function () {

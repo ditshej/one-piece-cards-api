@@ -20,39 +20,33 @@ it('fails when sync config is missing', function () {
 });
 
 it('uploads the database via scp', function () {
-    Process::fake([
-        'scp *' => Process::result(exitCode: 0),
-        'ssh *' => Process::result(exitCode: 0),
-    ]);
+    Process::fake(['*' => Process::result(exitCode: 0)]);
 
     $this->artisan('cards:sync')
         ->expectsOutputToContain('Sync complete')
         ->assertSuccessful();
 
-    Process::assertRan(fn ($p) => str_contains($p->command, 'scp')
-        && str_contains($p->command, 'database.sqlite')
-        && str_contains($p->command, 'example.com')
-        && str_contains($p->command, '22')
+    Process::assertRan(fn ($p) => is_array($p->command)
+        && in_array('scp', $p->command)
+        && in_array('22', $p->command)
+        && collect($p->command)->contains(fn ($arg) => str_contains($arg, 'example.com'))
+        && collect($p->command)->contains(fn ($arg) => str_contains($arg, 'database.sqlite'))
     );
 });
 
 it('clears production cache after upload', function () {
-    Process::fake([
-        'scp *' => Process::result(exitCode: 0),
-        'ssh *' => Process::result(exitCode: 0),
-    ]);
+    Process::fake(['*' => Process::result(exitCode: 0)]);
 
     $this->artisan('cards:sync')->assertSuccessful();
 
-    Process::assertRan(fn ($p) => str_contains($p->command, 'ssh')
-        && str_contains($p->command, 'optimize:clear')
+    Process::assertRan(fn ($p) => is_array($p->command)
+        && in_array('ssh', $p->command)
+        && collect($p->command)->contains(fn ($arg) => str_contains($arg, 'optimize:clear'))
     );
 });
 
 it('fails when scp fails', function () {
-    Process::fake([
-        'scp *' => Process::result(errorOutput: 'Connection refused', exitCode: 1),
-    ]);
+    Process::fake(['*' => Process::result(errorOutput: 'Connection refused', exitCode: 1)]);
 
     $this->artisan('cards:sync')
         ->expectsOutputToContain('SCP failed')
@@ -60,9 +54,7 @@ it('fails when scp fails', function () {
 });
 
 it('calls cards:fetch first when --fetch is passed', function () {
-    Process::fake([
-        '* --version' => Process::result(exitCode: 1),
-    ]);
+    Process::fake(['*' => Process::result(exitCode: 1)]);
 
     $this->artisan('cards:sync --fetch')
         ->expectsOutputToContain('Fetching latest card data');

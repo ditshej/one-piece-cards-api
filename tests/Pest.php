@@ -44,7 +44,7 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function withApiKey(): array
 {
-    // ..
+    return ['Authorization' => 'Bearer '.config('auth.api_key')];
 }

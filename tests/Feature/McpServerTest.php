@@ -7,9 +7,6 @@ use App\Mcp\Tools\ListCardsTool;
 use App\Mcp\Tools\ListPacksTool;
 use App\Models\Card;
 use App\Models\Pack;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 it('list-packs returns all packs', function () {
     Pack::factory()->count(3)->create();

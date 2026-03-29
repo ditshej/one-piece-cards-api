@@ -22,12 +22,4 @@ class CardsServer extends Server
         ListCardsTool::class,
         GetCardTool::class,
     ];
-
-    protected array $resources = [
-        //
-    ];
-
-    protected array $prompts = [
-        //
-    ];
 }

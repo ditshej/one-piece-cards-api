@@ -15,7 +15,7 @@ class SyncCardsCommand extends Command
     {
         $host = config('import.sync_host');
         $user = config('import.sync_user');
-        $port = config('import.sync_port');
+        $port = (string) config('import.sync_port');
         $path = config('import.sync_path');
 
         if (! $host || ! $user || ! $path) {
@@ -30,11 +30,18 @@ class SyncCardsCommand extends Command
         }
 
         $localDb = database_path('database.sqlite');
+
+        if (! file_exists($localDb)) {
+            $this->error("Database file not found at: {$localDb}");
+
+            return self::FAILURE;
+        }
+
         $remoteDb = "{$path}/database/database.sqlite";
 
         $this->info('Uploading database to production...');
 
-        $scpResult = Process::run("scp -P {$port} {$localDb} {$user}@{$host}:{$remoteDb}");
+        $scpResult = Process::run(['scp', '-P', $port, $localDb, "{$user}@{$host}:{$remoteDb}"]);
 
         if ($scpResult->failed()) {
             $this->error('SCP failed: '.$scpResult->errorOutput());
@@ -44,7 +51,10 @@ class SyncCardsCommand extends Command
 
         $this->info('Clearing production cache...');
 
-        $sshResult = Process::run("ssh {$user}@{$host} -p {$port} 'cd {$path} && /opt/php83/bin/php artisan optimize:clear'");
+        $sshResult = Process::run([
+            'ssh', "{$user}@{$host}", '-p', $port,
+            "cd {$path} && /opt/php83/bin/php artisan optimize:clear",
+        ]);
 
         if ($sshResult->failed()) {
             $this->warn('Cache clear failed: '.$sshResult->errorOutput());

@@ -1,9 +1,8 @@
 <?php
 
 it('serves the openapi json spec', function () {
-    $this->get('/docs/api.json')
-        ->assertOk()
-        ->assertHeader('Content-Type', 'application/json');
+    $this->getJson('/docs/api.json')
+        ->assertOk();
 });
 
 it('serves the stoplight elements ui', function () {

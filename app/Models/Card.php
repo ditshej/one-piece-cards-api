@@ -50,11 +50,11 @@ class Card extends Model
         $query
             ->when($filters['color'] ?? null, fn ($q, $color) => $q->whereJsonContains('colors', $color))
             ->when($filters['category'] ?? null, fn ($q, $category) => $q->where('category', $category))
-            ->when($filters['cost'] ?? null, fn ($q, $cost) => $q->where('cost', $cost))
-            ->when($filters['cost_min'] ?? null, fn ($q, $min) => $q->where('cost', '>=', $min))
-            ->when($filters['cost_max'] ?? null, fn ($q, $max) => $q->where('cost', '<=', $max))
-            ->when($filters['power_min'] ?? null, fn ($q, $min) => $q->where('power', '>=', $min))
-            ->when($filters['power_max'] ?? null, fn ($q, $max) => $q->where('power', '<=', $max))
+            ->when(isset($filters['cost']) && $filters['cost'] !== null, fn ($q) => $q->where('cost', $filters['cost']))
+            ->when(isset($filters['cost_min']) && $filters['cost_min'] !== null, fn ($q) => $q->where('cost', '>=', $filters['cost_min']))
+            ->when(isset($filters['cost_max']) && $filters['cost_max'] !== null, fn ($q) => $q->where('cost', '<=', $filters['cost_max']))
+            ->when(isset($filters['power_min']) && $filters['power_min'] !== null, fn ($q) => $q->where('power', '>=', $filters['power_min']))
+            ->when(isset($filters['power_max']) && $filters['power_max'] !== null, fn ($q) => $q->where('power', '<=', $filters['power_max']))
             ->when($filters['pack_label'] ?? null, fn ($q, $label) => $q->whereHas('pack', fn ($r) => $r->where('label', $label)))
             ->when($filters['search'] ?? null, fn ($q, $search) => $q->where(
                 fn ($sub) => $sub->where('effect', 'LIKE', "%{$search}%")

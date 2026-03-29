@@ -34,7 +34,7 @@ Each card SHALL belong to exactly one pack. The relationship SHALL be defined as
 - **AND** the pack's id is "OP01"
 
 ### Requirement: Card searchability
-Cards SHALL be searchable via API query parameters: color (`whereJsonContains`), category, cost, pack (`pack_id`), and free-text search on effect and trigger fields (`LIKE`).
+Cards SHALL be searchable via API query parameters: color (`whereJsonContains`), category, cost, pack (by pack **label**, resolved via a join on the `packs` table), and free-text search on effect and trigger fields (`LIKE`). All additional filter parameters defined in the `card-filtering` spec (name, rarity, attribute, type, cost range, power range, keyword, alt_art, per_page) are also supported on the `GET /api/v1/cards` endpoint.
 
 #### Scenario: Filter cards by color
 - **GIVEN** multiple cards with different colors exist

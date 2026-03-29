@@ -13,6 +13,7 @@ class CardResource extends JsonResource
         return [
             'id' => $this->id,
             'pack_id' => $this->pack_id,
+            'card_set' => $this->card_set,
             'name' => $this->name,
             'rarity' => $this->rarity,
             'category' => $this->category,
@@ -25,6 +26,7 @@ class CardResource extends JsonResource
             'effect' => $this->effect,
             'trigger' => $this->trigger,
             'img_url' => $this->img_url,
+            'alt_art_variant' => $this->alt_art_variant,
         ];
     }
 }

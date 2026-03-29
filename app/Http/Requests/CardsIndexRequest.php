@@ -31,6 +31,7 @@ class CardsIndexRequest extends FormRequest
             'attribute' => ['nullable', 'string'],
             'type' => ['nullable', 'string'],
             'keyword' => ['nullable', 'string'],
+            'card_set' => ['nullable', 'string'],
             'alt_art' => ['nullable', 'boolean'],
             'per_page' => ['nullable', 'integer', 'between:1,100'],
         ];

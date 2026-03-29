@@ -70,6 +70,7 @@ class ImportCardsCommand extends Command
     {
         return [
             'pack_id' => $cardData['pack_id'],
+            'card_set' => explode('-', $cardData['id'])[0],
             'name' => $cardData['name'],
             'rarity' => $cardData['rarity'],
             'category' => $cardData['category'],
@@ -82,6 +83,7 @@ class ImportCardsCommand extends Command
             'effect' => $cardData['effect'],
             'trigger' => $cardData['trigger'],
             'img_url' => $cardData['img_full_url'] ?? $cardData['img_url'],
+            'alt_art_variant' => preg_match('/_p(\d+)$/', $cardData['id'], $m) ? (int) $m[1] : null,
         ];
     }
 

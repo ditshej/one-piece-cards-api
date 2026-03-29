@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['id', 'pack_id', 'name', 'rarity', 'category', 'colors', 'cost', 'power', 'counter', 'attributes', 'types', 'effect', 'trigger', 'img_url'])]
+#[Fillable(['id', 'pack_id', 'card_set', 'name', 'rarity', 'category', 'colors', 'cost', 'power', 'counter', 'attributes', 'types', 'effect', 'trigger', 'img_url', 'alt_art_variant'])]
 class Card extends Model
 {
     /** @use HasFactory<CardFactory> */
@@ -28,6 +28,7 @@ class Card extends Model
             'colors' => 'array',
             'attributes' => 'array',
             'types' => 'array',
+            'alt_art_variant' => 'integer',
         ];
     }
 
@@ -68,6 +69,7 @@ class Card extends Model
                 fn ($sub) => $sub->where('effect', 'LIKE', "%[{$keyword}]%")
                     ->orWhere('trigger', 'LIKE', "%[{$keyword}]%")
             ))
-            ->when($filters['alt_art'] ?? false, fn ($q) => $q->whereRaw("INSTR(id, '_p') > 0"));
+            ->when($filters['card_set'] ?? null, fn ($q, $cardSet) => $q->where('card_set', $cardSet))
+            ->when($filters['alt_art'] ?? false, fn ($q) => $q->whereNotNull('alt_art_variant'));
     }
 }

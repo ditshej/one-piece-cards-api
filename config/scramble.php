@@ -28,6 +28,16 @@ return [
          * Description rendered on the home page of the API documentation (`/docs/api`).
          */
         'description' => 'REST API for One Piece TCG card data — packs, cards, and filters.',
+
+        /*
+         * Contact information for API key requests. Set these in your .env file.
+         * All fields are optional — omit any you don't need.
+         */
+        'contact' => [
+            'name' => env('API_CONTACT_NAME'),
+            'url' => env('API_CONTACT_URL'),
+            'email' => env('API_CONTACT_EMAIL'),
+        ],
     ],
 
     /*

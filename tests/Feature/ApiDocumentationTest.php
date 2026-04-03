@@ -25,3 +25,10 @@ it('applies BearerToken security globally in the openapi spec', function () {
 
     expect($json['security'])->toContain(['BearerToken' => []]);
 });
+
+it('renders the docs ui with system theme', function () {
+    $this->get('/docs/api')
+        ->assertOk()
+        ->assertSee('data-theme="system"', false)
+        ->assertSee('prefers-color-scheme', false);
+});

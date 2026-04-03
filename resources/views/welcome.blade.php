@@ -22,7 +22,7 @@
     <body class="bg-[#FDFDFC] dark:bg-[#0a0a0a] text-[#1b1b18] flex p-6 lg:p-8 items-center lg:justify-center min-h-screen flex-col">
         <div class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
             <main class="flex max-w-[335px] w-full flex-col-reverse lg:max-w-4xl lg:flex-row">
-                <div class="text-[13px] leading-[20px] flex-1 p-6 pb-6 lg:p-20 lg:pb-10 bg-white dark:bg-[#161615] dark:text-[#EDEDEC] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d] rounded-bl-lg rounded-br-lg lg:rounded-tl-lg lg:rounded-br-none">
+                <div class="text-[13px] leading-[20px] flex-1 p-6 pb-6 lg:p-12 lg:pb-8 bg-white dark:bg-[#161615] dark:text-[#EDEDEC] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.12)] dark:shadow-[inset_0px_0px_0px_1px_rgba(30,46,122,0.4)] rounded-bl-lg rounded-br-lg lg:rounded-tl-lg lg:rounded-br-none">
                     <h1 class="mb-1 font-medium">One Piece Cards API</h1>
                     <p class="mb-2 text-[#706f6c] dark:text-[#A1A09A]">REST API for One Piece TCG card data — packs, cards, and filters.</p>
                     <ul class="flex flex-col mb-4 lg:mb-6">
@@ -45,7 +45,7 @@
                             </span>
                             <span>
                                 Read the
-                                <a href="/docs/api" class="inline-flex items-center space-x-1 font-medium underline underline-offset-4 text-[#f53003] dark:text-[#FF4433] ml-1">
+                                <a href="/docs/api" class="inline-flex items-center space-x-1 font-medium underline underline-offset-4 text-[#1E2E7A] dark:text-[#F0C830] ml-1">
                                     <span>Documentation</span>
                                     <svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5">
                                         <path d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001" stroke="currentColor" stroke-linecap="square" />
@@ -57,7 +57,7 @@
 
                     <p class="mt-6 lg:mt-10 text-[#706f6c] dark:text-[#A1A09A]">
                         MCP Server available at
-                        <a href="/mcp" class="inline-flex items-center space-x-1 font-medium underline underline-offset-4 text-[#f53003] dark:text-[#FF4433] ml-1">
+                        <a href="/mcp" class="inline-flex items-center space-x-1 font-medium underline underline-offset-4 text-[#1E2E7A] dark:text-[#F0C830] ml-1">
                             <span>/mcp</span>
                             <svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5">
                                 <path d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001" stroke="currentColor" stroke-linecap="square" />
@@ -65,31 +65,31 @@
                         </a>
                     </p>
                 </div>
-                <div class="bg-[#fff2f2] dark:bg-[#1D0002] relative lg:-ml-px -mb-px lg:mb-0 rounded-t-lg lg:rounded-t-none lg:rounded-r-lg aspect-[335/364] lg:aspect-auto w-full lg:w-[438px] shrink-0 overflow-hidden">
+                <div class="bg-white dark:bg-[#111D52] relative lg:-ml-px -mb-px lg:mb-0 rounded-t-lg lg:rounded-t-none lg:rounded-r-lg aspect-[335/364] lg:aspect-auto w-full lg:w-[438px] shrink-0 overflow-hidden">
                     {{-- One Piece TCG Wordmark --}}
-                    <svg class="w-full text-[#F53003] dark:text-[#F61500] transition-all translate-y-0 opacity-100 max-w-none duration-750 starting:opacity-0 motion-safe:starting:translate-y-6" viewBox="0 0 438 104" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <text x="219" y="80" text-anchor="middle" font-size="70" font-weight="600" font-family="Instrument Sans, ui-sans-serif, sans-serif" fill="currentColor">One Piece TCG</text>
+                    <svg class="w-full text-[#1E2E7A] dark:text-[#F0C830] transition-all translate-y-0 opacity-100 max-w-none delay-300 duration-750 starting:opacity-0 motion-safe:starting:translate-y-6" viewBox="0 0 438 104" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <text x="219" y="64" text-anchor="middle" font-size="56" font-weight="600" font-family="Instrument Sans, ui-sans-serif, sans-serif" fill="currentColor">One Piece TCG</text>
                     </svg>
 
                     {{-- API --}}
-                    <svg class="w-[438px] max-w-none relative -mt-[6.6rem] -ml-8 lg:ml-0 [--outline-color:#fff2f2] dark:[--outline-color:#1D0002]" viewBox="0 0 440 392" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <g class="mix-blend-darken dark:mix-blend-normal transition-all delay-300 opacity-100 duration-750 starting:opacity-0 text-[#1B1B18] dark:text-black">
-                            <text x="-20" y="340" font-size="290" font-weight="700" font-family="Instrument Sans, ui-sans-serif, sans-serif" fill="currentColor" stroke="var(--outline-color)" stroke-width="8" paint-order="stroke fill">API</text>
+                    <svg class="w-[438px] max-w-none relative -mt-[6.6rem] -ml-8 lg:ml-0" viewBox="0 0 440 392" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g class="transition-all delay-300 opacity-100 duration-750 starting:opacity-0 text-[#1E2E7A] dark:text-[#F0C830]">
+                            <text x="-10" y="372" font-size="270" font-weight="700" font-family="Instrument Sans, ui-sans-serif, sans-serif" fill="currentColor">API</text>
                         </g>
-                        <g class="transition-all delay-400 opacity-100 duration-750 starting:opacity-0 motion-safe:starting:-translate-x-[26px] motion-safe:starting:translate-y-[22px] text-[#F3BEC7] dark:text-[#4B0600]">
-                            <text x="6" y="318" font-size="290" font-weight="700" font-family="Instrument Sans, ui-sans-serif, sans-serif" fill="currentColor">API</text>
+                        <g class="mix-blend-multiply dark:mix-blend-screen transition-all delay-400 opacity-100 duration-750 starting:opacity-0 motion-safe:starting:-translate-x-[26px] motion-safe:starting:translate-y-[22px] text-[#C89800] dark:text-[#060B1E]">
+                            <text x="16" y="350" font-size="270" font-weight="700" font-family="Instrument Sans, ui-sans-serif, sans-serif" fill="currentColor">API</text>
                         </g>
-                        <g class="mix-blend-color dark:mix-blend-hard-light transition-all delay-400 opacity-100 duration-750 starting:opacity-0 motion-safe:starting:-translate-x-[52px] motion-safe:starting:translate-y-[44px] text-[#F8B803] dark:text-[#391800]">
-                            <text x="32" y="296" font-size="290" font-weight="700" font-family="Instrument Sans, ui-sans-serif, sans-serif" fill="currentColor">API</text>
+                        <g class="mix-blend-multiply dark:mix-blend-screen transition-all delay-400 opacity-100 duration-750 starting:opacity-0 motion-safe:starting:-translate-x-[52px] motion-safe:starting:translate-y-[44px] text-[#F0C830] dark:text-[#0C1428]">
+                            <text x="42" y="328" font-size="270" font-weight="700" font-family="Instrument Sans, ui-sans-serif, sans-serif" fill="currentColor">API</text>
                         </g>
-                        <g class="mix-blend-multiply dark:mix-blend-normal transition-all delay-400 opacity-100 duration-750 starting:opacity-0 motion-safe:starting:-translate-x-[78px] motion-safe:starting:translate-y-[66px] text-[#F3BEC7] dark:text-[#733000]">
-                            <text x="58" y="274" font-size="290" font-weight="700" font-family="Instrument Sans, ui-sans-serif, sans-serif" fill="currentColor">API</text>
+                        <g class="mix-blend-multiply dark:mix-blend-screen transition-all delay-400 opacity-100 duration-750 starting:opacity-0 motion-safe:starting:-translate-x-[78px] motion-safe:starting:translate-y-[66px] text-[#7B9FD4] dark:text-[#140D00]">
+                            <text x="68" y="306" font-size="270" font-weight="700" font-family="Instrument Sans, ui-sans-serif, sans-serif" fill="currentColor">API</text>
                         </g>
-                        <g class="mix-blend-hard-light transition-all delay-400 opacity-100 duration-750 starting:opacity-0 motion-safe:starting:-translate-x-[104px] motion-safe:starting:translate-y-[88px] text-[#F3BEC7] dark:text-[#4B0600]">
-                            <text x="84" y="252" font-size="290" font-weight="700" font-family="Instrument Sans, ui-sans-serif, sans-serif" fill="currentColor">API</text>
+                        <g class="mix-blend-multiply dark:mix-blend-screen transition-all delay-400 opacity-100 duration-750 starting:opacity-0 motion-safe:starting:-translate-x-[104px] motion-safe:starting:translate-y-[88px] text-[#AABDE8] dark:text-[#080C20]">
+                            <text x="94" y="284" font-size="270" font-weight="700" font-family="Instrument Sans, ui-sans-serif, sans-serif" fill="currentColor">API</text>
                         </g>
                     </svg>
-                    <div class="absolute inset-0 rounded-t-lg lg:rounded-t-none lg:rounded-r-lg shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d]"></div>
+                    <div class="absolute inset-0 rounded-t-lg lg:rounded-t-none lg:rounded-r-lg shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.12)] dark:shadow-[inset_0px_0px_0px_1px_rgba(255,255,255,0.15)]"></div>
                 </div>
             </main>
         </div>

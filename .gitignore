@@ -25,3 +25,4 @@ Homestead.yaml
 Thumbs.db
 .claude/settings.local.json
 .env.deploy
+/.playwright-mcp

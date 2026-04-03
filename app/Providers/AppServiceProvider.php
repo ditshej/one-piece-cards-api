@@ -26,6 +26,22 @@ class AppServiceProvider extends ServiceProvider
             $openApi->secure(
                 SecurityScheme::http('bearer', 'API Key')->as('BearerToken'),
             );
+
+            $contactName = config('scramble.info.contact.name');
+            $contactEmail = config('scramble.info.contact.email');
+            $contactUrl = config('scramble.info.contact.url');
+
+            if ($contactName || $contactEmail) {
+                $label = $contactName ?? $contactEmail;
+                $link = $contactEmail ? "[{$label}](mailto:{$contactEmail})" : $label;
+                $contactLine = "\n\nTo request an API key, contact {$link}.";
+
+                if ($contactUrl) {
+                    $contactLine .= " — [{$contactUrl}]({$contactUrl})";
+                }
+
+                $openApi->info->setDescription($openApi->info->description.$contactLine);
+            }
         });
     }
 }

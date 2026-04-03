@@ -13,4 +13,4 @@
 
 - [x] 3.1 Remove `Route::has('login')` header block (no login route in this project)
 - [x] 3.2 Update `<title>` to "One Piece Cards API"
-- [ ] 3.3 Verify dark mode, animations, and layout are intact in browser
+- [x] 3.3 Verify dark mode, animations, and layout are intact in browser

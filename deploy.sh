@@ -10,4 +10,13 @@ set -a
 . .env.deploy
 set +a
 
-ssh $DEPLOY_SSH_CONNECTION -t "cd $DEPLOY_PATH && bash ./_deploy.sh"
+echo "Building frontend assets..."
+npm run build
+
+echo "Uploading build assets..."
+rsync -az --delete -e "ssh -p $DEPLOY_PORT" \
+    public/build/ \
+    $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/public/build/
+
+echo "Deploying..."
+ssh -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST -t "cd $DEPLOY_PATH && bash ./_deploy.sh"

@@ -35,7 +35,7 @@ return [
          */
         'contact' => [
             'name' => env('API_CONTACT_NAME'),
-            'url' => env('API_CONTACT_URL'),
+            'url' => env('API_CONTACT_URL', env('APP_URL')),
             'email' => env('API_CONTACT_EMAIL'),
         ],
     ],

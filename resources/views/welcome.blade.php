@@ -55,10 +55,7 @@
 
                     <p class="mt-6 lg:mt-10 text-[#706f6c] dark:text-[#A1A09A]">
                         MCP Server available at
-                        <a href="/mcp" class="inline-flex items-center space-x-1 font-medium underline underline-offset-4 text-[#1E2E7A] dark:text-[#F0C830] ml-1">
-                            <span>/mcp</span>
-                            <svg class="w-2.5 h-2.5"><use href="#icon-arrow-up-right" /></svg>
-                        </a>
+                        <code class="font-mono text-[11px] bg-[#f5f5f0] dark:bg-[#1C1C1A] px-2 py-0.5 rounded text-[#1b1b18] dark:text-[#EDEDEC] ml-1">/mcp</code>
                     </p>
                 </div>
                 <div class="bg-white dark:bg-[#111D52] relative lg:-ml-px -mb-px lg:mb-0 rounded-t-lg lg:rounded-t-none lg:rounded-r-lg aspect-[335/364] lg:aspect-auto w-full lg:w-[438px] shrink-0 overflow-hidden">

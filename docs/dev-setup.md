@@ -163,7 +163,76 @@ git branch -d feat/<change-name>
 
 Jedes Feature hat 3-4 Commits: Planung → Implementation → Review (optional) → Archivierung.
 
-## 7. .gitignore ergänzen
+## 7. Deployment einrichten
+
+### deploy.sh (lokal)
+
+Erstelle `deploy.sh` im Projekt-Root:
+
+```sh
+#!/bin/sh
+set -e
+
+if [ ! -f .env.deploy ]; then
+    echo "Error: .env.deploy not found. Copy .env.deploy.example and fill in your credentials."
+    exit 1
+fi
+
+set -a
+. .env.deploy
+set +a
+
+echo "Building frontend assets..."
+npm run build
+
+echo "Uploading build assets..."
+rsync -az --delete -e "ssh -p $DEPLOY_PORT" \
+    public/build/ \
+    $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/public/build/
+
+echo "Deploying..."
+ssh -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST -t "cd $DEPLOY_PATH && bash ./_deploy.sh"
+```
+
+> **Hinweis:** Der rsync-Schritt ist nötig wenn der Server kein Node.js hat. Wenn Node verfügbar ist, kann stattdessen `npm run build` im `_deploy.sh` auf dem Server ausgeführt werden.
+
+### .env.deploy.example (committen)
+
+```
+DEPLOY_USER=user
+DEPLOY_HOST=host
+DEPLOY_PORT=22
+DEPLOY_PATH=/path/on/server
+```
+
+`.env.deploy` selbst ins `.gitignore` eintragen — enthält echte Credentials.
+
+### _deploy.sh (auf dem Server, im Projekt-Root)
+
+```sh
+#!/bin/sh
+set -e
+
+PHP=/usr/bin/php
+
+git pull origin main
+
+$PHP /usr/bin/composer install --no-interaction --optimize-autoloader --no-dev
+
+$PHP artisan migrate --force
+
+$PHP artisan optimize:clear
+```
+
+> PHP-Pfad je nach Server anpassen (`which php` auf dem Server).
+
+### Deploy ausführen
+
+```bash
+./deploy.sh
+```
+
+## 8. .gitignore ergänzen
 
 Folgendes hinzufügen:
 
@@ -171,7 +240,7 @@ Folgendes hinzufügen:
 .claude/settings.local.json
 ```
 
-## 8. Claude Code Agents (global, einmalig)
+## 9. Claude Code Agents (global, einmalig)
 
 Zwei Agents in `~/.claude/agents/` einrichten:
 
@@ -180,7 +249,7 @@ Zwei Agents in `~/.claude/agents/` einrichten:
 
 Quelle: [freekmurze/dotfiles/config/claude/agents/](https://github.com/freekmurze/dotfiles/tree/main/config/claude/agents)
 
-## 9. Git-Delta (global, einmalig)
+## 10. Git-Delta (global, einmalig)
 
 ```bash
 brew install git-delta
@@ -203,7 +272,7 @@ In `~/.gitconfig` hinzufügen:
     colorMoved = default
 ```
 
-## 10. Optional: Weitere CLI-Tools
+## 11. Optional: Weitere CLI-Tools
 
 ```bash
 brew install eza bat zoxide fzf fnm
@@ -215,7 +284,7 @@ brew install eza bat zoxide fzf fnm
 - `fzf` — Fuzzy-Finder
 - `fnm` — Schneller Node.js Version Manager
 
-## 11. Shell Aliases
+## 12. Shell Aliases
 
 Eigene Datei `~/.aliases` anlegen und in `~/.zshrc` sourcen:
 
@@ -254,7 +323,7 @@ alias cy="claude --dangerously-skip-permissions"
 alias nah="git reset --hard && git clean -df"
 ```
 
-## 12. Claude Code Deny Rules (global)
+## 13. Claude Code Deny Rules (global)
 
 In `~/.claude/settings.json` Deny Rules hinzufügen. Diese greifen auch im Bypass-Modus (`--dangerously-skip-permissions`) und blocken destruktive Befehle:
 

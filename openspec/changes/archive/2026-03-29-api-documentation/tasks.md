@@ -1,17 +1,17 @@
-## 1. Package installieren & konfigurieren
+## 1. Install & configure package
 
-- [x] 1.1 `composer require dedoc/scramble` installieren
-- [x] 1.2 Scramble-Config publishen: `php artisan vendor:publish --provider="Dedoc\Scramble\ScrambleServiceProvider"`
-- [x] 1.3 `config/scramble.php` anpassen: Titel ("One Piece Cards API"), Version, API-Pfad (`api/v1`)
+- [x] 1.1 Install `composer require dedoc/scramble`
+- [x] 1.2 Publish Scramble config: `php artisan vendor:publish --provider="Dedoc\Scramble\ScrambleServiceProvider"`
+- [x] 1.3 Adjust `config/scramble.php`: title ("One Piece Cards API"), version, API path (`api/v1`)
 
-## 2. Verifikation
+## 2. Verification
 
-- [x] 2.1 `GET /docs/api.json` liefert gültiges OpenAPI 3.1 JSON mit allen 4 Endpoints
-- [x] 2.2 `GET /docs/api` liefert Stoplight Elements UI
-- [x] 2.3 Cards-Endpoint enthält Query-Parameter (color, category, cost, pack, search) in der Spec
-- [x] 2.4 Response-Schemas für Pack und Card sind korrekt (alle Felder aus den Eloquent Resources)
+- [x] 2.1 `GET /docs/api.json` returns valid OpenAPI 3.1 JSON with all 4 endpoints
+- [x] 2.2 `GET /docs/api` returns Stoplight Elements UI
+- [x] 2.3 Cards endpoint contains query parameters (color, category, cost, pack, search) in the spec
+- [x] 2.4 Response schemas for Pack and Card are correct (all fields from the Eloquent Resources)
 
 ## 3. Tests
 
-- [x] 3.1 Feature-Test: `GET /docs/api.json` gibt 200 zurück
-- [x] 3.2 Feature-Test: `GET /docs/api` gibt 200 zurück
+- [x] 3.1 Feature test: `GET /docs/api.json` returns 200
+- [x] 3.2 Feature test: `GET /docs/api` returns 200

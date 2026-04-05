@@ -1,34 +1,34 @@
 ## Context
 
-Die API hat 4 Endpoints unter `/api/v1/*` und ist vollständig undokumentiert. `dedoc/scramble` analysiert Laravel-Routen, Controller und Eloquent Resources automatisch und generiert daraus eine OpenAPI 3.1 Spec — ohne Annotations.
+The API has 4 endpoints under `/api/v1/*` and is completely undocumented. `dedoc/scramble` automatically analyzes Laravel routes, controllers and Eloquent Resources and generates an OpenAPI 3.1 spec from them — without annotations.
 
 ## Goals / Non-Goals
 
 **Goals:**
-- Interaktive Doku-UI unter `/docs/api` (Stoplight Elements)
-- Maschinenlesbare OpenAPI-Spec unter `/docs/api.json`
-- Zero-Annotation-Ansatz: kein manuelles Pflegen von Docblocks
+- Interactive documentation UI at `/docs/api` (Stoplight Elements)
+- Machine-readable OpenAPI spec at `/docs/api.json`
+- Zero-annotation approach: no manual maintenance of docblocks
 
 **Non-Goals:**
-- Authentifizierung der Docs-Route
-- Versionierung der generierten Spec (nicht committed)
-- Dokumentation von non-API-Routen
+- Authentication for the docs route
+- Versioning of the generated spec (not committed)
+- Documentation of non-API routes
 
 ## Decisions
 
-### Scramble statt Scribe
+### Scramble instead of Scribe
 
-Scribe erfordert `@response`-Annotations und ist wartungsintensiv. Scramble liest die Eloquent Resources direkt aus und generiert die Spec vollautomatisch. Für diese API (saubere Resources, keine komplexe Auth) ist der Zero-Annotation-Ansatz ideal.
+Scribe requires `@response` annotations and is maintenance-intensive. Scramble reads the Eloquent Resources directly and generates the spec fully automatically. For this API (clean resources, no complex auth) the zero-annotation approach is ideal.
 
-### Scramble als Production-Dependency
+### Scramble as production dependency
 
-Scramble wird als `require` (nicht `require-dev`) installiert, weil `/docs/api.json` auf dem Produktionsserver erreichbar sein soll — für AI-Projekte, die die Spec direkt von der Live-URL konsumieren.
+Scramble is installed as `require` (not `require-dev`) because `/docs/api.json` should be accessible on the production server — for AI projects that consume the spec directly from the live URL.
 
-### Kein Commit der generierten Docs
+### No commit of generated docs
 
-Scramble generiert die Spec zur Laufzeit (on-request), nicht als statische Datei. Es gibt nichts zu committen — der Endpoint ist immer aktuell.
+Scramble generates the spec at runtime (on-request), not as a static file. There is nothing to commit — the endpoint is always up to date.
 
 ## Risks / Trade-offs
 
-- **[Risk] Scramble erkennt nicht alle Response-Felder**: Wenn Eloquent Resources `toArray()` mit dynamischen Feldern verwenden → Mitigation: Scramble `@response`-Hints nur dort wo nötig
-- **[Risk] Docs-Route öffentlich**: `/docs/api` ist ohne Auth erreichbar → kein Problem, da die API selbst auch public ist
+- **[Risk] Scramble does not detect all response fields**: If Eloquent Resources use `toArray()` with dynamic fields → Mitigation: Scramble `@response` hints only where necessary
+- **[Risk] Docs route public**: `/docs/api` is accessible without auth → not a problem, since the API itself is also public

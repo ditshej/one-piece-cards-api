@@ -1,35 +1,35 @@
 ## Why
 
-Die API und der MCP-Server sind öffentlich zugänglich. Da sie auf privatem Hosting läuft, können Dritte sie nutzen und Traffic/Kosten verursachen. Das Projekt soll open-source werden, aber jeder soll seine eigene Instanz betreiben — nicht die des Autors.
+The API and the MCP server are publicly accessible. Since it runs on private hosting, third parties can use it and cause traffic/costs. The project is to become open source, but everyone should run their own instance — not the author's.
 
 ## What Changes
 
-- `ApiKeyMiddleware` schützt alle `/api/v1/*`-Routes und den MCP-Endpoint `/mcp`
-- API-Key wird als statischer Wert in `.env` (`API_KEY`) konfiguriert
-- Requests müssen `Authorization: Bearer <key>` Header senden
-- Requests ohne oder mit falschem Key erhalten 401
-- Scramble-Docs (`/docs/api*`) bleiben öffentlich — sie geben keine Daten zurück
+- `ApiKeyMiddleware` protects all `/api/v1/*` routes and the MCP endpoint `/mcp`
+- API key is configured as a static value in `.env` (`API_KEY`)
+- Requests must send `Authorization: Bearer <key>` header
+- Requests without or with the wrong key receive 401
+- Scramble docs (`/docs/api*`) remain public — they return no data
 
 ## Capabilities
 
 ### New Capabilities
 
-- `api-key-auth`: Statische API-Key-Authentifizierung für REST-API und MCP-Server
+- `api-key-auth`: Static API key authentication for REST API and MCP server
 
 ### Modified Capabilities
 
-<!-- keine bestehenden Specs betroffen -->
+<!-- no existing specs affected -->
 
 ## Impact
 
-- Alle bestehenden API-Tests müssen den Auth-Header senden
-- MCP-Integration in anderen Projekten braucht `Authorization: Bearer <key>` Header
-- Kein Breaking Change für den MCP-Server (Header-Support ist in `laravel/mcp` eingebaut)
-- Keine Datenbankänderungen, kein neues Package
+- All existing API tests must send the auth header
+- MCP integration in other projects needs `Authorization: Bearer <key>` header
+- No breaking change for the MCP server (header support is built into `laravel/mcp`)
+- No database changes, no new package
 
 ## Non-goals
 
-- Per-User-Token-Management (kein Sanctum/Passport)
-- Rate Limiting
-- Token-Rotation oder Expiry
-- Schutz der Scramble-Docs
+- Per-user token management (no Sanctum/Passport)
+- Rate limiting
+- Token rotation or expiry
+- Protection of Scramble docs

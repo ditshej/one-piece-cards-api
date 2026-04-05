@@ -3,4 +3,4 @@
 use App\Mcp\Servers\CardsServer;
 use Laravel\Mcp\Facades\Mcp;
 
-Mcp::web('/mcp', CardsServer::class)->middleware('api.key');
+Mcp::web('/mcp', CardsServer::class)->middleware('auth:sanctum');

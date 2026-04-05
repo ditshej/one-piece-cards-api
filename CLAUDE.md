@@ -167,51 +167,55 @@ This project has domain-specific skills available. You MUST activate the relevan
 
 </laravel-boost-guidelines>
 
+## Language
+
+All documentation, specs, comments, and code artifacts must be written in **English**. Conversational language (chat with Claude) remains German.
+
 ## Git + OpenSpec Feature Branch Flow
 
-**Regel:** Jedes neue Feature oder jede grössere Änderung startet IMMER mit `/opsx:propose` — nie direkt implementieren, auch nicht im Plan-Mode. Erst nach dem Propose-Commit darf mit `/opsx:apply` begonnen werden.
+**Rule:** Every new feature or significant change ALWAYS starts with `/opsx:propose` — never implement directly, not even in Plan Mode. Only after the propose commit may `/opsx:apply` begin.
 
-Jede OpenSpec-Change bekommt einen eigenen Feature-Branch. Kein Squash-Merge — die volle History bleibt auf `main` erhalten.
+Each OpenSpec change gets its own feature branch. No squash merges — full history stays on `main`.
 
-### Branch-Namenskonvention
+### Branch Naming Convention
 
 ```
-feat/<change-name>      # z.B. feat/card-management
+feat/<change-name>      # e.g. feat/card-management
 ```
 
-### Workflow pro Change
+### Workflow per Change
 
 ```bash
-# 1. Branch erstellen
+# 1. Create branch
 git checkout -b feat/<change-name>
 
-# 2. OpenSpec Change erstellen & planen
+# 2. Create & plan OpenSpec change
 openspec new change "<change-name>"
-# → proposal.md, specs/, design.md, tasks.md erstellen
+# → create proposal.md, specs/, design.md, tasks.md
 # → Commit: "docs: add openspec change <change-name>"
 
 # 3. Implementation (TDD)
-# /opsx:apply — Tasks abarbeiten
+# /opsx:apply — work through tasks
 # → Commit(s): "feat: ...", "test: ...", etc.
 
 # 4. Code Review
-# a) laravel-simplifier Agent — automatisches Review
-# b) Findings fixen, dann committen
-# c) Agent gibt Code-Übersicht + manuelle Testanleitung
-# d) User reviewt selbst — erst nach User-OK weitermachen!
+# a) laravel-simplifier agent — automated review
+# b) Fix findings, then commit
+# c) Agent provides code overview + manual testing instructions
+# d) User reviews — only continue after user approval!
 
-# 5. Archivierung
-# /opsx:archive — Change abschliessen, Specs mergen
+# 5. Archive
+# /opsx:archive — finalize change, merge specs
 # → Commit: "docs: archive <change-name> change"
 
-# 6. Merge nach main (kein Squash!)
+# 6. Merge to main (no squash!)
 git checkout main
 git merge feat/<change-name>
 git push
 git branch -d feat/<change-name>
 ```
 
-### Resultierende History auf main
+### Resulting History on main
 
 ```
 * docs: archive <change-name> change
@@ -220,4 +224,4 @@ git branch -d feat/<change-name>
 * docs: add openspec change <change-name>
 ```
 
-Jedes Feature hat 3-4 Commits: Planung → Implementation → Review (optional) → Archivierung.
+Each feature has 3-4 commits: Planning → Implementation → Review (optional) → Archive.

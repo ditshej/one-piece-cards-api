@@ -111,6 +111,7 @@ cp .env.deploy.example .env.deploy
 | `DEPLOY_HOST` | Server hostname or IP |
 | `DEPLOY_PORT` | SSH port (default: `22`) |
 | `DEPLOY_PATH` | Absolute path to the project on the server |
+| `DEPLOY_PHP` | Path to PHP binary on the server (e.g. `/opt/php83/bin/php`) |
 
 Then deploy:
 

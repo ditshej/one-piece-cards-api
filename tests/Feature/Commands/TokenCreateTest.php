@@ -24,4 +24,4 @@ it('outputs the plaintext token once', function () {
 
 it('requires name and email arguments', function () {
     $this->artisan('token:create');
-})->throws(\RuntimeException::class, 'Not enough arguments');
+})->throws(RuntimeException::class, 'Not enough arguments');

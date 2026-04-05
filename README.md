@@ -117,8 +117,14 @@ Issue a token on the production server via SSH (run locally):
 
 The plaintext token is printed once — store it securely. The script reads SSH credentials from `.env.deploy`.
 
-To revoke a token:
+To revoke a token on the production server (run locally):
 
 ```bash
 ./create-token.sh --revoke "App Name"
+```
+
+To revoke a token locally:
+
+```bash
+php artisan token:revoke "App Name"
 ```

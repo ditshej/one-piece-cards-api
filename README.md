@@ -1,58 +1,72 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# One Piece Cards API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+REST API for One Piece TCG card data — packs, cards, and filters. Covers all sets including OP15+, sourced from the official Bandai card list via [vegapull](https://github.com/Coko7/vegapull).
 
-## About Laravel
+**Live API:** `https://op-cards-api.ditshej.ch/api/v1`
+**API Docs:** `https://op-cards-api.ditshej.ch/docs/api`
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Authentication
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+All endpoints require a Bearer token:
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+Authorization: Bearer <your-token>
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Tokens are issued per consuming application. To request access, contact the owner.
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Endpoints
 
-## Code of Conduct
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/v1/packs` | List all card packs |
+| `GET` | `/api/v1/packs/{id}` | Get a pack with its cards |
+| `GET` | `/api/v1/cards` | List cards (filterable, paginated) |
+| `GET` | `/api/v1/cards/{id}` | Get a single card |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Card filters
 
-## Security Vulnerabilities
+| Parameter | Description |
+|-----------|-------------|
+| `color` | Filter by color (e.g. `red`, `blue`) |
+| `category` | Filter by category (e.g. `Character`) |
+| `cost` | Filter by cost value |
+| `pack_id` | Filter by pack |
+| `search` | Full-text search in effect text |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Full reference: [`/docs/api`](https://op-cards-api.ditshej.ch/docs/api)
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Deployment
+
+Requires `.env.deploy` with SSH credentials (copy from `.env.deploy.example`):
+
+```bash
+./deploy.sh
+```
+
+Builds frontend assets, uploads them via rsync, and runs `_deploy.sh` on the server (git pull, composer install, migrate, optimize).
+
+---
+
+## Token Management
+
+Issue a token for a new consuming app from your local machine:
+
+```bash
+./create-token.sh "App Name" "email@example.com"
+```
+
+The plaintext token is printed once — store it securely. The script reads SSH credentials from `.env.deploy`.
+
+To revoke a token, use Tinker on the server:
+
+```bash
+ssh -p $PORT $USER@$HOST -t "cd /path && php artisan tinker"
+# Laravel\Sanctum\PersonalAccessToken::where('name', 'App Name')->delete();
+```

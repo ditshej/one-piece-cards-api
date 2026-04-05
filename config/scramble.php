@@ -27,7 +27,9 @@ return [
         /*
          * Description rendered on the home page of the API documentation (`/docs/api`).
          */
-        'description' => 'REST API for One Piece TCG card data — packs, cards, and filters.',
+        'description' => 'REST API for One Piece TCG card data — packs, cards, and filters.
+
+All endpoints require authentication via a Bearer token in the `Authorization` header. Tokens are issued per consuming application — to request access, contact the API owner.',
 
         /*
          * Contact information for API key requests. Set these in your .env file.

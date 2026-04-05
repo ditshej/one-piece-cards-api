@@ -117,9 +117,8 @@ Issue a token on the production server via SSH (run locally):
 
 The plaintext token is printed once — store it securely. The script reads SSH credentials from `.env.deploy`.
 
-To revoke a token, use Tinker on the server:
+To revoke a token:
 
 ```bash
-ssh -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST "cd $DEPLOY_PATH && php artisan tinker"
-# Laravel\Sanctum\PersonalAccessToken::where('name', 'App Name')->delete();
+./create-token.sh --revoke "App Name"
 ```

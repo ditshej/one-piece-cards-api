@@ -26,27 +26,27 @@ cd project-name
 composer require --dev laravel/boost laravel/pail laravel/pint pestphp/pest pestphp/pest-plugin-laravel
 ```
 
-## 2. OpenSpec einrichten
+## 2. Set up OpenSpec
 
 ```bash
 npm install -g @fission-ai/openspec
 openspec init
 ```
 
-Das erstellt:
-- `openspec/config.yaml` — Projekt-Config
-- `openspec/specs/` — Langlebige Projekt-Specs (werden durch Changes befüllt)
-- `openspec/changes/` — Kurzlebige Arbeitspakete
-- `.claude/skills/openspec-*` — Skills für Claude Code Agents
+This creates:
+- `openspec/config.yaml` — project config
+- `openspec/specs/` — long-lived project specs (populated by changes)
+- `openspec/changes/` — short-lived work packages
+- `.claude/skills/openspec-*` — skills for Claude Code Agents
 
-`openspec/config.yaml` mit Projekt-Context befüllen:
+Fill `openspec/config.yaml` with project context:
 
 ```yaml
 schema: spec-driven
 
 context: |
   ## Project
-  <Projekt-Beschreibung>
+  <project description>
 
   ## Tech Stack
   PHP 8.x, Laravel 12, Pest 4, Pint, Blade + Tailwind 4 + Alpine.js, Vite, SQLite
@@ -77,92 +77,97 @@ rules:
 
 ### OpenSpec Workflow
 
-Jeder Change durchläuft 4 Artifacts:
+Each change goes through 4 artifacts:
 
 ```
-/openspec-propose     → proposal.md (WARUM)
-                      → specs/*.md  (WAS — Requirements mit WHEN/THEN Scenarios)
-                      → design.md   (WIE — Architektur-Entscheide)
-                      → tasks.md    (TODO — Checkboxen, Tests vor Code)
-/openspec-apply-change → Implementieren (Tasks abarbeiten)
-/openspec-archive-change → Abschliessen, Specs in Haupt-Specs syncen
+/openspec-propose     → proposal.md (WHY)
+                      → specs/*.md  (WHAT — requirements with WHEN/THEN scenarios)
+                      → design.md   (HOW — architecture decisions)
+                      → tasks.md    (TODO — checkboxes, tests before code)
+/openspec-apply-change → Implementation (work through tasks)
+/openspec-archive-change → Close change, sync specs to main specs
 ```
+
+> **Rule 1:** Every new feature ALWAYS starts with `/opsx:propose` — never implement directly, not even in plan mode.
+
+> **Rule 2:** Commit immediately after `/opsx:propose` — before implementing:
+> `git add openspec/ && git commit -m "docs: add openspec change <name>"`
 
 ## 3. Spatie Guidelines
 
-Kopiere `docs/spatie-guidelines.md` ins neue Projekt. Diese Datei enthält die Spatie PHP/Laravel Coding Standards, optimiert für AI Code Assistants.
+Copy `docs/spatie-guidelines.md` into the new project. This file contains the Spatie PHP/Laravel Coding Standards, optimized for AI Code Assistants.
 
-Quelle: [freekmurze/dotfiles](https://github.com/freekmurze/dotfiles/blob/main/config/claude/laravel-php-guidelines.md)
+Source: [freekmurze/dotfiles](https://github.com/freekmurze/dotfiles/blob/main/config/claude/laravel-php-guidelines.md)
 
 ## 4. Conventional Commits
 
-In `CLAUDE.md` unter `## Git Commits` die Convention festlegen:
+Define the convention in `CLAUDE.md` under `## Git Commits`:
 
 - Format: `<type>[optional scope]: <description>`
 - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`
-- Scope optional in Klammern: `feat(auth): add login endpoint`
-- Breaking changes: `!` vor dem Doppelpunkt: `feat!: remove legacy API`
-- Description: Imperativ, Kleinbuchstaben, kein Punkt am Ende
+- Scope optional in parentheses: `feat(auth): add login endpoint`
+- Breaking changes: `!` before the colon: `feat!: remove legacy API`
+- Description: imperative mood, lowercase, no trailing period
 
-Referenz: [conventionalcommits.org/en/v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)
+Reference: [conventionalcommits.org/en/v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)
 
 ## 5. TDD (Test-Driven Development)
 
-In `CLAUDE.md` unter `## Testing (TDD)` festlegen:
+Define in `CLAUDE.md` under `## Testing (TDD)`:
 
-- Tests ZUERST schreiben, dann den Code implementieren
-- Pest 4 für alle Tests, bevorzugt Feature Tests
-- Umfassende Test-Coverage anstreben — kein Feature ohne Tests
-- `php artisan test --compact` nach jeder Änderung
+- Write tests FIRST, then implement the code
+- Pest 4 for all tests, prefer Feature Tests
+- Aim for comprehensive test coverage — no feature without tests
+- `php artisan test --compact` after every change
 
 ## 6. Git + OpenSpec Feature Branch Flow
 
-Jede OpenSpec-Change bekommt einen eigenen Feature-Branch. Kein Squash-Merge — die volle History bleibt auf `main` erhalten.
+Every OpenSpec change gets its own feature branch. No squash merge — the full history stays on `main`.
 
-### Branch-Namenskonvention
+### Branch Naming Convention
 
 ```
-feat/<change-name>      # z.B. feat/import-cards-command
+feat/<change-name>      # e.g. feat/import-cards-command
 ```
 
-### Workflow pro Change
+### Workflow per Change
 
 ```bash
-# 1. Branch erstellen
+# 1. Create branch
 git checkout -b feat/<change-name>
 
-# 2. OpenSpec Change erstellen & planen
+# 2. Create & plan OpenSpec change
 openspec new change "<change-name>"
-# → proposal.md, specs/, design.md, tasks.md erstellen
+# → create proposal.md, specs/, design.md, tasks.md
 # → Commit: "docs: add openspec change <change-name>"
 
 # 3. Implementation (TDD)
-# /opsx:apply — Tasks abarbeiten
+# /opsx:apply — work through tasks
 
 # 4. Code Review
-# a) laravel-simplifier Agent — automatisches Review
-# b) Findings fixen, dann committen
-# c) Agent gibt Code-Übersicht (Architektur, Dateien, Tests)
-#    + manuelle Testanleitung falls UI/Endpunkte betroffen
-# d) User reviewt selbst (PhpStorm, GitHub PR, oder git diff main...HEAD)
-# → Erst nach User-OK weitermachen!
+# a) laravel-simplifier Agent — automated review
+# b) Fix findings, then commit
+# c) Agent provides code overview (architecture, files, tests)
+#    + manual testing instructions if UI/endpoints are affected
+# d) User reviews themselves (PhpStorm, GitHub PR, or git diff main...HEAD)
+# → Don't proceed until user OK!
 # → Commit(s): "feat: ...", "refactor: ...", etc.
 
-# Feature-Branch aktuell halten: Rebase statt Merge
+# Keep feature branch current: rebase instead of merge
 git fetch origin && git rebase origin/main
 
-# 5. Archivierung
-# /opsx:archive — Change abschliessen, Specs mergen
+# 5. Archiving
+# /opsx:archive — close change, merge specs
 # → Commit: "docs: archive <change-name> change"
 
-# 6. Merge nach main (kein Squash!)
+# 6. Merge to main (no squash!)
 git checkout main
 git merge feat/<change-name>
 git push
 git branch -d feat/<change-name>
 ```
 
-### Resultierende History auf main
+### Resulting History on main
 
 ```
 * docs: archive import-cards-command change
@@ -174,13 +179,13 @@ git branch -d feat/<change-name>
 * docs: add openspec change pack-and-card-models
 ```
 
-Jedes Feature hat 3-4 Commits: Planung → Implementation → Review (optional) → Archivierung.
+Each feature has 3-4 commits: Planning → Implementation → Review (optional) → Archiving.
 
-## 7. Deployment einrichten
+## 7. Set up Deployment
 
-### deploy.sh (lokal)
+### deploy.sh (local)
 
-Erstelle `deploy.sh` im Projekt-Root:
+Create `deploy.sh` in the project root:
 
 ```sh
 #!/bin/sh
@@ -207,9 +212,9 @@ echo "Deploying..."
 ssh -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST -t "cd $DEPLOY_PATH && bash ./_deploy.sh"
 ```
 
-> **Hinweis:** Der rsync-Schritt ist nötig wenn der Server kein Node.js hat. Wenn Node verfügbar ist, kann stattdessen `npm run build` im `_deploy.sh` auf dem Server ausgeführt werden.
+> **Note:** The rsync step is needed when the server has no Node.js. If Node is available, `npm run build` can be run in `_deploy.sh` on the server instead.
 
-### .env.deploy.example (committen)
+### .env.deploy.example (commit this)
 
 ```
 DEPLOY_USER=user
@@ -218,9 +223,9 @@ DEPLOY_PORT=22
 DEPLOY_PATH=/path/on/server
 ```
 
-`.env.deploy` selbst ins `.gitignore` eintragen — enthält echte Credentials.
+Add `.env.deploy` itself to `.gitignore` — it contains real credentials.
 
-### _deploy.sh (auf dem Server, im Projekt-Root)
+### _deploy.sh (on the server, in the project root)
 
 ```sh
 #!/bin/sh
@@ -237,38 +242,38 @@ $PHP artisan migrate --force
 $PHP artisan optimize:clear
 ```
 
-> PHP-Pfad je nach Server anpassen (`which php` auf dem Server).
+> Adjust the PHP path according to the server (`which php` on the server).
 
-### Deploy ausführen
+### Run Deploy
 
 ```bash
 ./deploy.sh
 ```
 
-## 8. .gitignore ergänzen
+## 8. Extend .gitignore
 
-Folgendes hinzufügen:
+Add the following:
 
 ```
 .claude/settings.local.json
 ```
 
-## 9. Claude Code Agents (global, einmalig)
+## 9. Claude Code Agents (global, one-time)
 
-Zwei Agents in `~/.claude/agents/` einrichten:
+Set up two agents in `~/.claude/agents/`:
 
-- **laravel-debugger.md** — Diagnostiziert Errors, Stack Traces, N+1 Queries, Queue-Failures
-- **laravel-simplifier.md** — Reviewt und vereinfacht Code (Klarheit, Redundanz, Naming, Konventionen)
+- **laravel-debugger.md** — Diagnoses errors, stack traces, N+1 queries, queue failures
+- **laravel-simplifier.md** — Reviews and simplifies code (clarity, redundancy, naming, conventions)
 
-Quelle: [freekmurze/dotfiles/config/claude/agents/](https://github.com/freekmurze/dotfiles/tree/main/config/claude/agents)
+Source: [freekmurze/dotfiles/config/claude/agents/](https://github.com/freekmurze/dotfiles/tree/main/config/claude/agents)
 
-## 10. Git-Delta (global, einmalig)
+## 10. Git-Delta (global, one-time)
 
 ```bash
 brew install git-delta
 ```
 
-In `~/.gitconfig` hinzufügen:
+Add to `~/.gitconfig`:
 
 ```ini
 [core]
@@ -285,28 +290,28 @@ In `~/.gitconfig` hinzufügen:
     colorMoved = default
 ```
 
-## 11. Optional: Weitere CLI-Tools
+## 11. Optional: Additional CLI Tools
 
 ```bash
 brew install eza bat zoxide fzf fnm
 ```
 
-- `eza` — Besseres `ls` mit Icons
-- `bat` — Besseres `cat` mit Syntax-Highlighting
-- `zoxide` — Smartes `cd` (lernt Verzeichnisse)
-- `fzf` — Fuzzy-Finder
-- `fnm` — Schneller Node.js Version Manager
+- `eza` — Better `ls` with icons
+- `bat` — Better `cat` with syntax highlighting
+- `zoxide` — Smart `cd` (learns directories)
+- `fzf` — Fuzzy finder
+- `fnm` — Fast Node.js version manager
 
 ## 12. Shell Aliases
 
-Eigene Datei `~/.aliases` anlegen und in `~/.zshrc` sourcen:
+Create a file `~/.aliases` and source it in `~/.zshrc`:
 
 ```bash
-# In ~/.zshrc einfügen:
+# Add to ~/.zshrc:
 [ -f ~/.aliases ] && source ~/.aliases
 ```
 
-Inhalt von `~/.aliases`:
+Contents of `~/.aliases`:
 
 ```bash
 # Laravel / PHP
@@ -338,7 +343,7 @@ alias nah="git reset --hard && git clean -df"
 
 ## 13. Claude Code Deny Rules (global)
 
-In `~/.claude/settings.json` Deny Rules hinzufügen. Diese greifen auch im Bypass-Modus (`--dangerously-skip-permissions`) und blocken destruktive Befehle:
+Add deny rules to `~/.claude/settings.json`. These apply even in bypass mode (`--dangerously-skip-permissions`) and block destructive commands:
 
 ```json
 {
@@ -362,4 +367,4 @@ In `~/.claude/settings.json` Deny Rules hinzufügen. Diese greifen auch im Bypas
 }
 ```
 
-Referenz: [Safety Nets for Claude Code](https://cbox.dk/blog/safety-nets-for-claude-code-skip-permissions)
+Reference: [Safety Nets for Claude Code](https://cbox.dk/blog/safety-nets-for-claude-code-skip-permissions)

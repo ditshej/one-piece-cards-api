@@ -1,38 +1,38 @@
 ## Context
 
-Aktuell gibt es kein Middleware-Verzeichnis und keine Auth-Middleware. `bootstrap/app.php` hat eine leere `withMiddleware`-Sektion. Der API-Key wird als einziger statischer Wert in `.env` gespeichert — kein User-Model, keine Datenbank.
+Currently there is no middleware directory and no auth middleware. `bootstrap/app.php` has an empty `withMiddleware` section. The API key is stored as a single static value in `.env` — no user model, no database.
 
 ## Goals / Non-Goals
 
 **Goals:**
-- REST-API und MCP mit einem geteilten Key absichern
-- Zero-Overhead: kein neues Package, kein DB-Query pro Request
-- Einfach rotierbar: Key-Wechsel = `.env` ändern + `optimize:clear`
+- Secure REST API and MCP with a shared key
+- Zero overhead: no new package, no DB query per request
+- Easy to rotate: key change = change `.env` + `optimize:clear`
 
 **Non-Goals:**
-- Mehrere Keys / per-client Keys
+- Multiple keys / per-client keys
 - Sanctum / Passport
-- Rate Limiting
+- Rate limiting
 
 ## Decisions
 
-### API-Key in `config/auth.php` statt eigener Config
+### API key in `config/auth.php` instead of a separate config
 
-`config/auth.php` existiert bereits und wird per `config('auth.api_key')` abgerufen. Kein neues Config-File nötig.
+`config/auth.php` already exists and is accessed via `config('auth.api_key')`. No new config file needed.
 
-### `bearerToken()` statt eigenen Header
+### `bearerToken()` instead of a custom header
 
-Laravel's `$request->bearerToken()` parsed `Authorization: Bearer <key>` automatisch. Standard-HTTP-Auth-Pattern, funktioniert mit MCP-Clients und `curl` gleich.
+Laravel's `$request->bearerToken()` parses `Authorization: Bearer <key>` automatically. Standard HTTP auth pattern, works the same with MCP clients and `curl`.
 
-### Middleware-Alias `api.key`
+### Middleware alias `api.key`
 
-Statt Middleware global anzuwenden, wird sie als Alias registriert und explizit auf die Routes angewendet. So bleibt `/docs/api*` öffentlich ohne Ausnahme-Logik.
+Instead of applying middleware globally, it is registered as an alias and applied explicitly to routes. This keeps `/docs/api*` public without exception logic.
 
-### MCP-Route: `->middleware()` auf dem zurückgegebenen Route-Objekt
+### MCP route: `->middleware()` on the returned route object
 
-`Mcp::web()` gibt ein Laravel `Route`-Objekt zurück — Middleware kann direkt gekettet werden.
+`Mcp::web()` returns a Laravel `Route` object — middleware can be chained directly.
 
 ## Risks / Trade-offs
 
-- **[Risk] Key im `.env` im Klartext**: Shared-Hosting hat `.env` nicht öffentlich → kein Problem
-- **[Risk] Bestehende Tests brechen**: Alle API- und MCP-Tests müssen den Header senden → Update der Tests nötig
+- **[Risk] Key in `.env` in plain text**: Shared hosting does not expose `.env` publicly → not a problem
+- **[Risk] Existing tests break**: All API and MCP tests must send the header → update of tests required

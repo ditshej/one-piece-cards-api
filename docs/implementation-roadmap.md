@@ -59,36 +59,36 @@ Operational polish: seeder, scheduled import, architecture tests.
 
 ---
 
-## Phase 2: Deployment & Daten-Pipeline
+## Phase 2: Deployment & Data Pipeline
 
-3 Changes um die API live zu bringen und mit echten Kartendaten zu befuellen.
+3 changes to bring the API live and populate it with real card data.
 
 ```
-Change 6: vegapull-fetch-command (lokal, unabhaengig)
-Change 7: metanet-deployment (Server-Setup)
-    └──→ Change 8: data-sync-command (braucht laufendes Deployment)
+Change 6: vegapull-fetch-command (local, independent)
+Change 7: metanet-deployment (server setup)
+    └──→ Change 8: data-sync-command (requires running deployment)
 ```
 
 ### ~~6. `vegapull-fetch-command`~~ ✅
 
-Artisan Command `cards:fetch` das vegapull ausfuehrt und direkt importiert.
+Artisan command `cards:fetch` that runs vegapull and imports directly.
 
-- **Specs:** `import` (modified — Requirement "Vegapull Integration" bereits definiert)
-- **Scope:** Neues Command `cards:fetch`: prueft ob `vega` Binary verfuegbar ist, fuehrt `vega pull all` aus, ruft `cards:import` auf. Config-Key `import.vegapull_binary`.
+- **Specs:** `import` (modified — requirement "Vegapull Integration" already defined)
+- **Scope:** New command `cards:fetch`: checks if `vega` binary is available, runs `vega pull all`, calls `cards:import`. Config key `import.vegapull_binary`.
 - **Depends on:** Change 2
 
 ### ~~7. `metanet-deployment`~~ ✅
 
-Laravel-App auf Metanet Shared Hosting deployen.
+Deploy Laravel app to Metanet shared hosting.
 
-- **Specs:** neue Spec `deployment`
-- **Scope:** Server-Umgebung erkunden (PHP-Version, Pfade, Web Root). Deploy-Scripts (`deploy.sh` lokal, `_deploy.sh` remote): git pull, composer install, artisan optimize. Analog zu `statamic-ferienspasswil`.
-- **Depends on:** Changes 1-5 (komplette API)
+- **Specs:** new spec `deployment`
+- **Scope:** Explore server environment (PHP version, paths, web root). Deploy scripts (`deploy.sh` local, `_deploy.sh` remote): git pull, composer install, artisan optimize. Analogous to `statamic-ferienspasswil`.
+- **Depends on:** Changes 1-5 (complete API)
 
 ### ~~8. `data-sync-command`~~ ✅
 
-Artisan Command `cards:sync` das die lokale SQLite-DB auf Metanet hochlaedt.
+Artisan command `cards:sync` that uploads the local SQLite DB to Metanet.
 
-- **Specs:** `import` (modified) oder neue Spec `deployment`
-- **Scope:** Neues Command `cards:sync`: optional `cards:fetch` ausfuehren (`--fetch`), SQLite-DB per SCP auf Metanet kopieren, Remote-Cache leeren. SSH-Config aus `.env`.
+- **Specs:** `import` (modified) or new spec `deployment`
+- **Scope:** New command `cards:sync`: optionally run `cards:fetch` (`--fetch`), copy SQLite DB to Metanet via SCP, clear remote cache. SSH config from `.env`.
 - **Depends on:** Change 7

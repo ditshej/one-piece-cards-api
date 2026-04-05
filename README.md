@@ -47,6 +47,21 @@ php artisan token:create "My App" "me@example.com"
 
 ---
 
+## MCP Server
+
+The API exposes an [MCP](https://modelcontextprotocol.io) server at `/mcp` for use with AI assistants (e.g. Claude). Available tools mirror the REST API:
+
+| Tool | Description |
+|------|-------------|
+| `list-packs` | List all card packs |
+| `get-pack` | Get a pack with its cards |
+| `list-cards` | List cards with filters |
+| `get-card` | Get a single card |
+
+Authentication uses the same Bearer token as the REST API.
+
+---
+
 ## Authentication
 
 All endpoints require a Bearer token:

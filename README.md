@@ -1,6 +1,6 @@
 # One Piece Cards API
 
-Laravel application that builds a REST API for One Piece TCG card data. Card data is fetched from the official Bandai card list via [vegapull](https://github.com/Coko7/vegapull) and stored in a local SQLite database. Covers all sets including OP15+.
+Laravel application that builds a REST API for One Piece TCG card data. Card data is fetched from the official Bandai card list via [vegapull](https://github.com/Coko7/vegapull) and stored in a local SQLite database. Covers all sets published on the Bandai card list.
 
 **Live API:** `https://op-cards-api.ditshej.ch/api/v1`
 **API Docs:** `https://op-cards-api.ditshej.ch/docs/api`

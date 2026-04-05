@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\User;
-use Laravel\Sanctum\PersonalAccessToken;
 use Laravel\Sanctum\Sanctum;
 
 it('rejects api requests without authorization header', function () {
@@ -44,5 +43,5 @@ it('updates last_used_at on valid authenticated request', function () {
         ->getJson('/api/v1/packs')
         ->assertOk();
 
-    expect(PersonalAccessToken::first()->last_used_at)->not->toBeNull();
+    expect($newToken->accessToken->fresh()->last_used_at)->not->toBeNull();
 });

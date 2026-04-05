@@ -14,19 +14,21 @@ class TokenCreate extends Command
 {
     public function handle(): int
     {
+        $name = $this->argument('name');
+
         $user = User::create([
-            'name' => $this->argument('name'),
+            'name' => $name,
             'email' => $this->argument('email'),
             'password' => Str::random(64),
         ]);
 
-        $token = $user->createToken($this->argument('name'));
+        $token = $user->createToken($name);
 
         $this->components->info("Token created for [{$user->name}].");
         $this->components->warn('Store this token securely — it will not be shown again.');
-        $this->line('');
+        $this->newLine();
         $this->line("  <fg=green>{$token->plainTextToken}</>");
-        $this->line('');
+        $this->newLine();
 
         return self::SUCCESS;
     }

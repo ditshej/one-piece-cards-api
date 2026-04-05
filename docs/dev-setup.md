@@ -5,6 +5,19 @@ Based on learnings from the "yohohoho" project, inspired by [freekmurze/dotfiles
 
 ---
 
+## Language Convention
+
+All project artifacts are written in **English**:
+- Code, variable names, class names
+- Comments and PHPDoc blocks
+- OpenSpec artifacts (proposal.md, specs, design.md, tasks.md)
+- Git commit messages
+- Documentation files (README, docs/)
+
+**Conversation language with Claude remains German.**
+
+---
+
 ## 1. Project Init
 
 ```bash

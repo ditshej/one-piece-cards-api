@@ -96,7 +96,7 @@ Builds frontend assets, uploads them via rsync, and runs `_deploy.sh` on the ser
 
 ## Token Management
 
-Issue a token for a new consuming app from your local machine:
+Issue a token on the production server via SSH (run locally):
 
 ```bash
 ./create-token.sh "App Name" "email@example.com"

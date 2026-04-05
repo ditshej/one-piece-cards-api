@@ -168,9 +168,17 @@ This project has domain-specific skills available. You MUST activate the relevan
 
 </laravel-boost-guidelines>
 
-## Language
+## Language Convention
 
-All documentation, specs, comments, and code artifacts must be written in **English**. Conversational language (chat with Claude) remains German.
+All project artifacts are written in **English**:
+- Code, variable names, class names
+- Comments and PHPDoc blocks
+- OpenSpec artifacts (proposal.md, specs, design.md, tasks.md)
+- Git commit messages
+- Documentation files
+
+**Conversation language with Claude remains German.**
+
 
 ## Git + OpenSpec Feature Branch Flow
 

@@ -6,19 +6,17 @@ if [ ! -f .env.deploy ]; then
     exit 1
 fi
 
+set -a
+. .env.deploy
+set +a
+
 if [ "$1" = "--revoke" ]; then
     if [ -z "$2" ]; then
         echo "Usage: ./create-token.sh --revoke \"App Name\""
         exit 1
     fi
 
-    set -a
-    . .env.deploy
-    set +a
-
-    ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
-        "cd $DEPLOY_PATH && php artisan tinker --execute \"Laravel\\\\Sanctum\\\\PersonalAccessToken::where('name', '$2')->delete();\""
-    echo "Token for \"$2\" revoked."
+    ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "cd $DEPLOY_PATH && php artisan token:revoke \"$2\""
     exit 0
 fi
 
@@ -27,9 +25,5 @@ if [ -z "$1" ] || [ -z "$2" ]; then
     echo "       ./create-token.sh --revoke \"App Name\""
     exit 1
 fi
-
-set -a
-. .env.deploy
-set +a
 
 ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "cd $DEPLOY_PATH && php artisan token:create \"$1\" \"$2\""

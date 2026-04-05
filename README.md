@@ -1,9 +1,49 @@
 # One Piece Cards API
 
-REST API for One Piece TCG card data — packs, cards, and filters. Covers all sets including OP15+, sourced from the official Bandai card list via [vegapull](https://github.com/Coko7/vegapull).
+Laravel application that builds a REST API for One Piece TCG card data. Card data is fetched from the official Bandai card list via [vegapull](https://github.com/Coko7/vegapull) and stored in a local SQLite database. Covers all sets including OP15+.
 
 **Live API:** `https://op-cards-api.ditshej.ch/api/v1`
 **API Docs:** `https://op-cards-api.ditshej.ch/docs/api`
+
+---
+
+## Installation
+
+**Requirements:** PHP 8.4, Composer, Node.js, [vegapull](https://github.com/Coko7/vegapull)
+
+```bash
+# 1. Clone and install dependencies
+git clone <repo-url> && cd one-piece-cards-api
+composer install
+npm install
+
+# 2. Configure environment
+cp .env.example .env
+php artisan key:generate
+
+# 3. Run migrations
+php artisan migrate
+
+# 4. Fetch card data from Bandai via vegapull
+php artisan cards:fetch
+
+# 5. Issue yourself an API token
+php artisan token:create "My App" "me@example.com"
+```
+
+> **vegapull** must be installed and available as `vega` on your `$PATH`.
+> See [github.com/Coko7/vegapull](https://github.com/Coko7/vegapull) for installation instructions.
+> The binary name can be changed via `VEGAPULL_BINARY` in `.env`.
+
+---
+
+## Data Import
+
+| Command | Description |
+|---------|-------------|
+| `php artisan cards:fetch` | Fetch from Bandai via vegapull and import |
+| `php artisan cards:import <path>` | Import from existing vegapull JSON files |
+| `php artisan cards:sync` | Upload local SQLite DB to production server |
 
 ---
 
@@ -15,7 +55,7 @@ All endpoints require a Bearer token:
 Authorization: Bearer <your-token>
 ```
 
-Tokens are issued per consuming application. To request access, contact the owner.
+Tokens are issued per consuming application. To request access to the live API, contact the owner.
 
 ---
 

@@ -24,7 +24,7 @@ php artisan key:generate
 # 3. Run migrations
 php artisan migrate
 
-# 4. Fetch card data from Bandai via vegapull
+# 4. Fetch card data from Bandai via vegapull (may take a few minutes)
 php artisan cards:fetch
 
 # 5. Issue yourself an API token

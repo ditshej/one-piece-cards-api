@@ -114,16 +114,4 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
-    /*
-    |--------------------------------------------------------------------------
-    | API Key
-    |--------------------------------------------------------------------------
-    |
-    | This key is used to authenticate requests to the API. It should be set
-    | via the API_KEY environment variable and kept secret.
-    |
-    */
-
-    'api_key' => env('API_KEY'),
-
 ];

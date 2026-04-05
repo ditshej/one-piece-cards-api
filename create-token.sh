@@ -27,3 +27,4 @@ if [ -z "$1" ] || [ -z "$2" ]; then
 fi
 
 ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "cd $DEPLOY_PATH && php artisan token:create \"$1\" \"$2\""
+exit 0

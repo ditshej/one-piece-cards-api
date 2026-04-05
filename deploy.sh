@@ -19,4 +19,4 @@ rsync -az --delete -e "ssh -p $DEPLOY_PORT" \
     $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/public/build/
 
 echo "Deploying..."
-ssh -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST -t "cd $DEPLOY_PATH && bash ./_deploy.sh"
+ssh -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST -t "cd $DEPLOY_PATH && DEPLOY_PHP=$DEPLOY_PHP bash ./_deploy.sh"

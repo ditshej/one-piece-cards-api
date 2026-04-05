@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-PHP=/opt/php83/bin/php
+PHP=${DEPLOY_PHP:-/opt/php83/bin/php}
 
 git pull origin main
 

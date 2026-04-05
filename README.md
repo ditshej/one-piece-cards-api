@@ -87,6 +87,19 @@ Full reference: [`/docs/api`](https://op-cards-api.ditshej.ch/docs/api)
 Requires `.env.deploy` with SSH credentials (copy from `.env.deploy.example`):
 
 ```bash
+cp .env.deploy.example .env.deploy
+```
+
+| Variable | Description |
+|----------|-------------|
+| `DEPLOY_USER` | SSH username |
+| `DEPLOY_HOST` | Server hostname or IP |
+| `DEPLOY_PORT` | SSH port (default: `22`) |
+| `DEPLOY_PATH` | Absolute path to the project on the server |
+
+Then deploy:
+
+```bash
 ./deploy.sh
 ```
 

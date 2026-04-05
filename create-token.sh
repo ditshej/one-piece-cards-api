@@ -15,4 +15,4 @@ set -a
 . .env.deploy
 set +a
 
-ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" -t "cd $DEPLOY_PATH && php artisan token:create '$1' '$2'"
+ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "cd $DEPLOY_PATH && php artisan token:create \"$1\" \"$2\""

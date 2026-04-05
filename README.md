@@ -67,6 +67,6 @@ The plaintext token is printed once — store it securely. The script reads SSH 
 To revoke a token, use Tinker on the server:
 
 ```bash
-ssh -p $PORT $USER@$HOST -t "cd /path && php artisan tinker"
+ssh -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST "cd $DEPLOY_PATH && php artisan tinker"
 # Laravel\Sanctum\PersonalAccessToken::where('name', 'App Name')->delete();
 ```

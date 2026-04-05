@@ -1,0 +1,8 @@
+#!/bin/sh
+
+echo "Running tests before commit..."
+
+if ! php artisan test --compact; then
+    echo "Tests failed. Commit blocked."
+    exit 1
+fi

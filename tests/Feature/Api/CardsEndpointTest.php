@@ -465,6 +465,19 @@ it('excludes cards by color_not', function () {
         ->and($response->json('data.0.colors'))->toBe(['Blue']);
 });
 
+it('excludes cards containing any of multiple color_not values', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['colors' => ['Red']]);
+    Card::factory()->for($pack)->create(['colors' => ['Blue']]);
+    Card::factory()->for($pack)->create(['colors' => ['Green']]);
+    Card::factory()->for($pack)->create(['colors' => ['Red', 'Blue']]);
+
+    $response = $this->getJson('/api/v1/cards?color_not[]=Red&color_not[]=Blue')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(1)
+        ->and($response->json('data.0.colors'))->toBe(['Green']);
+});
+
 it('excludes cards by multiple rarity_not values', function () {
     $pack = Pack::factory()->create();
     Card::factory()->for($pack)->create(['rarity' => 'C']);
@@ -549,6 +562,18 @@ it('excludes cards with keyword_not matching effect or trigger', function () {
     $response = $this->getJson('/api/v1/cards?keyword_not[]=Blocker')->assertOk();
 
     expect($response->json('data'))->toHaveCount(1);
+});
+
+it('combines has_trigger=true with keyword_not to exclude blocker cards that have a trigger', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['effect' => '[Blocker] Guard this.', 'trigger' => 'Draw 1 card.']);
+    Card::factory()->for($pack)->create(['effect' => 'Attack now.', 'trigger' => 'Add 1 DON!!.']);
+    Card::factory()->for($pack)->create(['effect' => 'Draw 2 cards.', 'trigger' => null]);
+
+    $response = $this->getJson('/api/v1/cards?has_trigger=true&keyword_not[]=Blocker')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(1)
+        ->and($response->json('data.0.effect'))->toBe('Attack now.');
 });
 
 it('excludes cards by multiple cost_not values', function () {

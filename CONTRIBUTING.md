@@ -21,7 +21,7 @@ Every change gets its own branch:
 git checkout -b feat/<change-name>   # e.g. feat/card-filtering
 ```
 
-No squash merges — full history stays on `main`.
+No squash merges — full history stays on `main`. Rebase before merging to keep the branch current:
 
 ### Workflow per Change
 
@@ -41,7 +41,10 @@ git add openspec/ && git commit -m "docs(<change-name>): add proposal, design an
 # 5. Archive the change
 /opsx:archive
 
-# 6. Merge to main
+# 6. Rebase onto main before merging
+git fetch origin && git rebase origin/main
+
+# 7. Merge to main (rebase & merge — no squash)
 git checkout main && git merge feat/<change-name>
 ```
 

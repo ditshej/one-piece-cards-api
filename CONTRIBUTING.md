@@ -38,14 +38,17 @@ git add openspec/ && git commit -m "docs(<change-name>): add proposal, design an
 # 4. Implement (TDD — tests first)
 /opsx:apply
 
+# 4a. Human review — don't proceed until approved
+# Open a PR or share git diff main...HEAD for review
+
 # 5. Archive the change
 /opsx:archive
 
 # 6. Rebase onto main before merging
 git fetch origin && git rebase origin/main
 
-# 7. Merge to main (rebase & merge — no squash)
-git checkout main && git merge feat/<change-name>
+# 7. Open a Pull Request — no direct pushes to main
+# Merges require review approval
 ```
 
 Use the change name as the commit scope on every commit on that branch:

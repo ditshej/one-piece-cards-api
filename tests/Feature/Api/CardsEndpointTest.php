@@ -236,9 +236,6 @@ it('filters cards by keyword matching [Keyword] bracket syntax', function () {
 
     $response = $this->getJson('/api/v1/cards?keyword=Blocker')->assertOk();
 
-    // Both cards contain [Blocker] in their effect text — the filter matches all occurrences.
-    // This is more precise than a free-text search for "blocker" (no brackets) which would
-    // also match cards referencing the word without the keyword syntax.
     expect($response->json('data'))->toHaveCount(2);
 });
 

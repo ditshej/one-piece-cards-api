@@ -7,7 +7,9 @@ Following the `cost` array-notation extension, the remaining card filters still 
 - `color` — accepts `?color[]=Red&color[]=Yellow` (OR: cards that contain at least one of the given colors)
 - `rarity` — accepts `?rarity[]=SR&rarity[]=SEC` (OR: whereIn)
 - `card_set` — accepts `?card_set[]=OP13&card_set[]=OP15` (OR: whereIn)
+- `category` — accepts `?category[]=Character&category[]=Leader` (OR: whereIn; replaces current `in:` validation)
 - `type` — accepts `?type[]=Minks&type[]=Strawhats` (OR: cards whose types array contains at least one of the given types)
+- `attribute` — accepts `?attribute[]=Wisdom&attribute[]=Strike` (OR: cards whose attributes array contains at least one)
 - `keyword` — accepts `?keyword[]=Blocker&keyword[]=Rush` (OR: cards with [Blocker] OR [Rush] in effect or trigger)
 - `power` — **new param** `?power[]=8000&power[]=10000` (OR: whereIn; currently only power_min/power_max range exists)
 
@@ -19,19 +21,17 @@ Following the `cost` array-notation extension, the remaining card filters still 
 
 ### Modified Capabilities
 
-- `card-filtering`: multi-value support for color, rarity, card_set, type, keyword; new power exact-match param with multi-value support
+- `card-filtering`: multi-value support for color, rarity, card_set, category, type, attribute, keyword; new power exact-match param with multi-value support
 
 ## Non-goals
 
-- `category` (4 fixed values, multi-value not useful in practice)
-- `attribute` (keep single-value for now)
 - `name`, `search` (free-text, OR makes no sense)
 - Changing AND logic between different filter types (stays AND-combined)
 - Pagination or sorting changes
 
 ## Impact
 
-- `GET /api/v1/cards` — 6 filter params extended, 1 new param added
+- `GET /api/v1/cards` — 8 filter params extended, 1 new param added (`power`)
 - `app/Http/Requests/CardsIndexRequest.php`
 - `app/Models/Card.php` (`scopeApplyFilters`)
 - `tests/Feature/Api/CardsEndpointTest.php`

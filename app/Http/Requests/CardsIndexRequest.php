@@ -11,6 +11,13 @@ class CardsIndexRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('cost') && ! is_array($this->cost)) {
+            $this->merge(['cost' => [$this->cost]]);
+        }
+    }
+
     /**
      * @return array<string, array<int, mixed>>
      */
@@ -19,7 +26,8 @@ class CardsIndexRequest extends FormRequest
         return [
             'color' => ['nullable', 'string'],
             'category' => ['nullable', 'string', 'in:Character,Event,Leader,Stage'],
-            'cost' => ['nullable', 'integer'],
+            'cost' => ['nullable', 'array'],
+            'cost.*' => ['integer'],
             'cost_min' => ['nullable', 'integer'],
             'cost_max' => ['nullable', 'integer'],
             'power_min' => ['nullable', 'integer'],

@@ -26,6 +26,18 @@ cd project-name
 composer require --dev laravel/boost laravel/pail laravel/pint pestphp/pest pestphp/pest-plugin-laravel
 ```
 
+Configure SQLite in `.env`:
+
+```
+DB_CONNECTION=sqlite
+```
+
+Create the database file:
+
+```bash
+touch database/database.sqlite
+```
+
 ## 2. Set up OpenSpec
 
 ```bash
@@ -71,8 +83,10 @@ rules:
   tasks:
     - Break tasks into chunks of max 2 hours
     - Tests must be listed BEFORE implementation tasks
+    - Maximum 15 tasks per change — split into smaller changes if more
   proposal:
     - Always include a "Non-goals" section
+    - Keep scope small — one concern per change, not an entire feature layer
 ```
 
 ### OpenSpec Workflow
@@ -91,7 +105,7 @@ Each change goes through 4 artifacts:
 > **Rule 1:** Every new feature ALWAYS starts with `/opsx:propose` — never implement directly, not even in plan mode.
 
 > **Rule 2:** Commit immediately after `/opsx:propose` — before implementing:
-> `git add openspec/ && git commit -m "docs: add openspec change <name>"`
+> `git add openspec/ && git commit -m "docs(<name>): add proposal, design and tasks"`
 
 ## 3. Spatie Guidelines
 
@@ -101,13 +115,18 @@ Source: [freekmurze/dotfiles](https://github.com/freekmurze/dotfiles/blob/main/c
 
 ## 4. Conventional Commits
 
-Define the convention in `CLAUDE.md` under `## Git Commits`:
+Define the convention in `CLAUDE.md` under `## Conventional Commits`:
 
 - Format: `<type>[optional scope]: <description>`
 - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`
 - Scope optional in parentheses: `feat(auth): add login endpoint`
 - Breaking changes: `!` before the colon: `feat!: remove legacy API`
 - Description: imperative mood, lowercase, no trailing period
+- **OpenSpec changes:** use the change name as scope for every commit on that branch:
+  `docs(list-packs): add proposal, design and tasks`
+  `feat(list-packs): add packs() and pack() endpoints`
+  `refactor(list-packs): apply review feedback`
+  `docs(list-packs): archive change`
 
 Reference: [conventionalcommits.org/en/v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)
 
@@ -119,6 +138,73 @@ Define in `CLAUDE.md` under `## Testing (TDD)`:
 - Pest 4 for all tests, prefer Feature Tests
 - Aim for comprehensive test coverage — no feature without tests
 - `php artisan test --compact` after every change
+
+### Pre-commit Hook
+
+Store the hook in `.githooks/pre-commit` (committed to the repo):
+
+```sh
+#!/bin/sh
+
+echo "Running tests before commit..."
+
+php artisan test --compact
+
+if [ $? -ne 0 ]; then
+    echo "Tests failed. Commit blocked."
+    exit 1
+fi
+```
+
+Make it executable:
+
+```bash
+chmod +x .githooks/pre-commit
+```
+
+Activate by adding to the `setup` script in `composer.json`:
+
+```json
+"setup": [
+    "...",
+    "git config core.hooksPath .githooks"
+]
+```
+
+Run once on existing projects:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+### Architecture Test
+
+Create `tests/Feature/ArchTest.php` to enforce that every Artisan Command has a corresponding test file:
+
+```php
+it('all artisan commands have a corresponding test file', function () {
+    $commandFiles = collect(\Illuminate\Support\Facades\File::allFiles(app_path('Console/Commands')))
+        ->filter(fn ($file) => $file->getExtension() === 'php')
+        ->map(fn ($file) => $file->getPathname())
+        ->toArray();
+
+    if (empty($commandFiles)) {
+        expect(true)->toBeTrue(); // no commands to check
+
+        return;
+    }
+
+    foreach ($commandFiles as $commandFile) {
+        $commandName = basename($commandFile, '.php');
+        $testFile = base_path("tests/Feature/{$commandName}Test.php");
+
+        expect(file_exists($testFile))
+            ->toBeTrue("Missing test file for command: {$commandName}");
+    }
+});
+```
+
+This test is automatically enforced via the pre-commit hook — a command without a test file will block the commit.
 
 ## 6. Git + OpenSpec Feature Branch Flow
 
@@ -139,7 +225,7 @@ git checkout -b feat/<change-name>
 # 2. Create & plan OpenSpec change
 openspec new change "<change-name>"
 # → create proposal.md, specs/, design.md, tasks.md
-# → Commit: "docs: add openspec change <change-name>"
+# → Commit: "docs(<change-name>): add proposal, design and tasks"
 
 # 3. Implementation (TDD)
 # /opsx:apply — work through tasks
@@ -151,14 +237,14 @@ openspec new change "<change-name>"
 #    + manual testing instructions if UI/endpoints are affected
 # d) User reviews themselves (PhpStorm, GitHub PR, or git diff main...HEAD)
 # → Don't proceed until user OK!
-# → Commit(s): "feat: ...", "refactor: ...", etc.
+# → Commit(s): "feat(<change-name>): ...", "refactor(<change-name>): ...", etc.
 
 # Keep feature branch current: rebase instead of merge
 git fetch origin && git rebase origin/main
 
 # 5. Archiving
 # /opsx:archive — close change, merge specs
-# → Commit: "docs: archive <change-name> change"
+# → Commit: "docs(<change-name>): archive change"
 
 # 6. Merge to main (no squash!)
 git checkout main
@@ -170,16 +256,18 @@ git branch -d feat/<change-name>
 ### Resulting History on main
 
 ```
-* docs: archive import-cards-command change
-* refactor: apply simplifier findings
-* feat: add cards:import artisan command
-* docs: add openspec change import-cards-command
-* docs: archive pack-and-card-models change
-* feat: add Pack and Card models with migrations and factories
-* docs: add openspec change pack-and-card-models
+* docs(import-cards-command): archive change
+* refactor(import-cards-command): apply review feedback
+* feat(import-cards-command): add cards:import artisan command
+* docs(import-cards-command): add proposal, design and tasks
+* docs(pack-and-card-models): archive change
+* feat(pack-and-card-models): add Pack and Card models with migrations and factories
+* docs(pack-and-card-models): add proposal, design and tasks
 ```
 
-Each feature has 3-4 commits: Planning → Implementation → Review (optional) → Archiving.
+Each feature follows: Planning → Implementation → Review (optional) → Archiving.
+Use the change name as commit scope for every commit on that branch.
+Multiple commits per phase are fine — commit as often as makes sense (feat, fix, test, refactor, etc.).
 
 ## 7. Set up Deployment
 
@@ -209,7 +297,8 @@ rsync -az --delete -e "ssh -p $DEPLOY_PORT" \
     $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/public/build/
 
 echo "Deploying..."
-ssh -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST -t "cd $DEPLOY_PATH && bash ./_deploy.sh"
+ssh -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST -t \
+    "cd $DEPLOY_PATH && DEPLOY_PHP=$DEPLOY_PHP DEPLOY_COMPOSER=$DEPLOY_COMPOSER bash ./_deploy.sh"
 ```
 
 > **Note:** The rsync step is needed when the server has no Node.js. If Node is available, `npm run build` can be run in `_deploy.sh` on the server instead.
@@ -221,6 +310,8 @@ DEPLOY_USER=user
 DEPLOY_HOST=host
 DEPLOY_PORT=22
 DEPLOY_PATH=/path/on/server
+DEPLOY_PHP=/usr/bin/php
+DEPLOY_COMPOSER=/usr/bin/composer
 ```
 
 Add `.env.deploy` itself to `.gitignore` — it contains real credentials.
@@ -231,18 +322,19 @@ Add `.env.deploy` itself to `.gitignore` — it contains real credentials.
 #!/bin/sh
 set -e
 
-PHP=/usr/bin/php
+PHP=${DEPLOY_PHP:-php}
+COMPOSER=${DEPLOY_COMPOSER:-composer}
 
 git pull origin main
 
-$PHP /usr/bin/composer install --no-interaction --optimize-autoloader --no-dev
+$PHP $COMPOSER install --no-interaction --optimize-autoloader --no-dev
 
 $PHP artisan migrate --force
 
 $PHP artisan optimize:clear
 ```
 
-> Adjust the PHP path according to the server (`which php` on the server).
+> Adjust `DEPLOY_PHP` and `DEPLOY_COMPOSER` in `.env.deploy` to match your server's paths (`which php` and `which composer` on the server).
 
 ### Run Deploy
 
@@ -250,15 +342,60 @@ $PHP artisan optimize:clear
 ./deploy.sh
 ```
 
-## 8. Extend .gitignore
+## 8. Laravel Boost / MCP Setup
+
+Laravel Boost provides an MCP server with tools designed for Laravel projects: database queries, schema inspection, log reading, and documentation search.
+
+Register the MCP server in Claude Code:
+
+```bash
+claude mcp add laravel-boost -- php artisan mcp:serve
+```
+
+This adds the server to `.claude/settings.json`. Verify with:
+
+```bash
+claude mcp list
+```
+
+The Boost rules (database tools, doc search, Artisan guidance) are injected into Claude's context automatically when the MCP server is active. The project-level `CLAUDE.md` should additionally include skills activation rules and project-specific conventions.
+
+## 9. Global `~/.claude/CLAUDE.md` (one-time, global)
+
+Create `~/.claude/CLAUDE.md` with universal rules that apply to **all** projects. This avoids duplicating them in every project's `CLAUDE.md`.
+
+```markdown
+## Language Convention
+All project artifacts in English. Conversation with Claude in German.
+
+## Conventional Commits
+Format: `<type>[scope]: <description>`
+Types: feat, fix, docs, refactor, test, chore, style, perf, build, ci
+OpenSpec changes: use change name as scope for every commit on that branch.
+Multiple commits per phase are fine (feat, fix, test, refactor, etc.).
+
+## Git Flow
+Feature branches: `feat/<change-name>`. No squash merges. Full history on main.
+
+## TDD
+Tests first, then implementation.
+
+## Claude Code Deny Rules
+See Section 15 of dev-setup — add these rules to `~/.claude/settings.json`.
+```
+
+The project-level `CLAUDE.md` then only needs project-specific rules.
+
+## 10. Extend .gitignore
 
 Add the following:
 
 ```
 .claude/settings.local.json
+.env.deploy
 ```
 
-## 9. Claude Code Agents (global, one-time)
+## 11. Claude Code Agents (global, one-time)
 
 Set up two agents in `~/.claude/agents/`:
 
@@ -267,7 +404,7 @@ Set up two agents in `~/.claude/agents/`:
 
 Source: [freekmurze/dotfiles/config/claude/agents/](https://github.com/freekmurze/dotfiles/tree/main/config/claude/agents)
 
-## 10. Git-Delta (global, one-time)
+## 12. Git-Delta (global, one-time)
 
 ```bash
 brew install git-delta
@@ -290,7 +427,7 @@ Add to `~/.gitconfig`:
     colorMoved = default
 ```
 
-## 11. Optional: Additional CLI Tools
+## 13. Optional: Additional CLI Tools
 
 ```bash
 brew install eza bat zoxide fzf fnm
@@ -302,7 +439,7 @@ brew install eza bat zoxide fzf fnm
 - `fzf` — Fuzzy finder
 - `fnm` — Fast Node.js version manager
 
-## 12. Shell Aliases
+## 14. Shell Aliases
 
 Create a file `~/.aliases` and source it in `~/.zshrc`:
 
@@ -341,7 +478,7 @@ alias cy="claude --dangerously-skip-permissions"
 alias nah="git reset --hard && git clean -df"
 ```
 
-## 13. Claude Code Deny Rules (global)
+## 15. Claude Code Deny Rules (global)
 
 Add deny rules to `~/.claude/settings.json`. These apply even in bypass mode (`--dangerously-skip-permissions`) and block destructive commands:
 
@@ -368,3 +505,9 @@ Add deny rules to `~/.claude/settings.json`. These apply even in bypass mode (`-
 ```
 
 Reference: [Safety Nets for Claude Code](https://cbox.dk/blog/safety-nets-for-claude-code-skip-permissions)
+
+---
+
+## Open TODOs
+
+- [ ] **`/new-laravel-project` skill** — Once this dev-setup is stable, create a Claude Code skill that automates Sections 1–6 and 9–10 for new projects (composer create-project, SQLite, OpenSpec init, pre-commit hook, ArchTest, CLAUDE.md boilerplate, .gitignore).

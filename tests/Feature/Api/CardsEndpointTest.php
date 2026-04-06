@@ -328,6 +328,33 @@ it('returns 422 for non-numeric cost_min', function () {
     $this->getJson('/api/v1/cards?cost_min=abc')->assertUnprocessable();
 });
 
+it('filters cards by multiple cost values using array notation', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['cost' => 3]);
+    Card::factory()->for($pack)->create(['cost' => 5]);
+    Card::factory()->for($pack)->create(['cost' => 7]);
+
+    $response = $this->getJson('/api/v1/cards?cost[]=3&cost[]=5')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2)
+        ->and(collect($response->json('data'))->pluck('cost')->sort()->values()->all())->toBe([3, 5]);
+});
+
+it('filters cards by single-element cost array equivalently to scalar cost', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['cost' => 5]);
+    Card::factory()->for($pack)->create(['cost' => 3]);
+
+    $response = $this->getJson('/api/v1/cards?cost[]=5')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(1)
+        ->and($response->json('data.0.cost'))->toBe(5);
+});
+
+it('returns 422 for non-integer cost array item', function () {
+    $this->getJson('/api/v1/cards?cost[]=abc')->assertUnprocessable();
+});
+
 it('returns 422 for per_page above maximum', function () {
     $this->getJson('/api/v1/cards?per_page=999')->assertUnprocessable();
 });

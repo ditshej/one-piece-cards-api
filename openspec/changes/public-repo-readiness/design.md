@@ -22,13 +22,13 @@ The repository currently has no LICENSE file, no CONTRIBUTING guide, and no CHAN
 
 **CHANGELOG.md** — uses [Keep a Changelog](https://keepachangelog.com) format with a single `[Unreleased]` section at the top and a `[1.0.0]` entry that groups all existing functionality. No specific release date needed for initial entry — can be left as `YYYY-MM-DD` until the first tagged release.
 
-**Remove `docs/dev-setup.md`** — it's a generic Laravel project setup template maintained in the yohohoho repo. It adds no value for someone using this specific API project. Contributors don't need to set up a new Laravel project; they clone this one.
+**Gitignore `docs/dev-setup.md`** — it's a generic Laravel project setup template maintained in the yohohoho repo. Not relevant for public contributors. Adding to `.gitignore` keeps it available locally during active development without publishing it.
 
 **Remove `docs/implementation-roadmap.md`** — internal planning artifact. Completed work is tracked via archived OpenSpec changes. The roadmap doesn't reflect current priorities.
 
 ## Risks / Trade-offs
 
-- Removing `docs/dev-setup.md` means anyone who copied the file from this repo loses the reference → Low risk; yohohoho is the canonical source.
+- Gitignoring `docs/dev-setup.md` means it stays out of the public repo but remains accessible locally as long as needed.
 - CHANGELOG requires manual maintenance going forward → Acceptable; it's a lightweight convention to uphold.
 
 ## Open Questions

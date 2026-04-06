@@ -13,8 +13,10 @@ class CardsIndexRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if ($this->has('cost') && ! is_array($this->cost)) {
-            $this->merge(['cost' => [$this->cost]]);
+        foreach (['cost', 'power', 'color', 'rarity', 'card_set', 'category', 'type', 'attribute', 'keyword'] as $param) {
+            if ($this->has($param) && ! is_array($this->$param)) {
+                $this->merge([$param => [$this->$param]]);
+            }
         }
     }
 
@@ -24,22 +26,31 @@ class CardsIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'color' => ['nullable', 'string'],
-            'category' => ['nullable', 'string', 'in:Character,Event,Leader,Stage'],
+            'color' => ['nullable', 'array'],
+            'color.*' => ['string'],
+            'category' => ['nullable', 'array'],
+            'category.*' => ['string', 'in:Character,Event,Leader,Stage'],
             'cost' => ['nullable', 'array'],
             'cost.*' => ['integer'],
             'cost_min' => ['nullable', 'integer'],
             'cost_max' => ['nullable', 'integer'],
+            'power' => ['nullable', 'array'],
+            'power.*' => ['integer'],
             'power_min' => ['nullable', 'integer'],
             'power_max' => ['nullable', 'integer'],
             'pack' => ['nullable', 'string'],
             'search' => ['nullable', 'string'],
             'name' => ['nullable', 'string'],
-            'rarity' => ['nullable', 'string'],
-            'attribute' => ['nullable', 'string'],
-            'type' => ['nullable', 'string'],
-            'keyword' => ['nullable', 'string'],
-            'card_set' => ['nullable', 'string'],
+            'rarity' => ['nullable', 'array'],
+            'rarity.*' => ['string'],
+            'attribute' => ['nullable', 'array'],
+            'attribute.*' => ['string'],
+            'type' => ['nullable', 'array'],
+            'type.*' => ['string'],
+            'keyword' => ['nullable', 'array'],
+            'keyword.*' => ['string'],
+            'card_set' => ['nullable', 'array'],
+            'card_set.*' => ['string'],
             'alt_art' => ['nullable', 'boolean'],
             'per_page' => ['nullable', 'integer', 'between:1,100'],
         ];

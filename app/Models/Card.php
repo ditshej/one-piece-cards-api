@@ -15,6 +15,18 @@ class Card extends Model
     /** @use HasFactory<CardFactory> */
     use HasFactory;
 
+    /**
+     * Filter parameters that accept either a scalar value or an array of values.
+     *
+     * @var list<string>
+     */
+    public const ARRAY_FILTER_PARAMS = [
+        'cost', 'power', 'color', 'rarity', 'card_set', 'category',
+        'type', 'attribute', 'keyword', 'counter',
+        'color_not', 'rarity_not', 'card_set_not', 'category_not',
+        'type_not', 'attribute_not', 'keyword_not', 'cost_not', 'power_not', 'counter_not',
+    ];
+
     public $incrementing = false;
 
     protected $keyType = 'string';
@@ -50,25 +62,15 @@ class Card extends Model
      */
     public function scopeApplyFilters(Builder $query, array $filters): void
     {
-        foreach (['cost', 'power', 'color', 'rarity', 'card_set', 'category', 'type', 'attribute', 'keyword', 'counter', 'color_not', 'rarity_not', 'card_set_not', 'category_not', 'type_not', 'attribute_not', 'keyword_not', 'cost_not', 'power_not', 'counter_not'] as $param) {
+        foreach (self::ARRAY_FILTER_PARAMS as $param) {
             if (isset($filters[$param]) && ! is_array($filters[$param])) {
                 $filters[$param] = [$filters[$param]];
             }
         }
 
         $query
-            ->when($filters['color'] ?? null, function ($q, $colors) {
-                $q->where(function ($sub) use ($colors) {
-                    foreach ($colors as $color) {
-                        $sub->orWhereJsonContains('colors', $color);
-                    }
-                });
-            })
-            ->when($filters['color_not'] ?? null, function ($q, $colorsNot) {
-                foreach ($colorsNot as $color) {
-                    $q->whereJsonDoesntContain('colors', $color);
-                }
-            })
+            ->when($filters['color'] ?? null, fn ($q, $colors) => $this->whereJsonContainsAny($q, 'colors', $colors))
+            ->when($filters['color_not'] ?? null, fn ($q, $colorsNot) => $this->whereJsonDoesntContainAll($q, 'colors', $colorsNot))
             ->when($filters['category'] ?? null, fn ($q, $category) => $q->whereIn('category', $category))
             ->when($filters['category_not'] ?? null, fn ($q, $categoryNot) => $q->whereNotIn('category', $categoryNot))
             ->when($filters['cost'] ?? null, fn ($q, $cost) => $q->whereIn('cost', $cost))
@@ -93,30 +95,10 @@ class Card extends Model
             ->when($filters['name'] ?? null, fn ($q, $name) => $q->where('name', 'LIKE', "%{$name}%"))
             ->when($filters['rarity'] ?? null, fn ($q, $rarity) => $q->whereIn('rarity', $rarity))
             ->when($filters['rarity_not'] ?? null, fn ($q, $rarityNot) => $q->whereNotIn('rarity', $rarityNot))
-            ->when($filters['attribute'] ?? null, function ($q, $attributes) {
-                $q->where(function ($sub) use ($attributes) {
-                    foreach ($attributes as $attribute) {
-                        $sub->orWhereJsonContains('attributes', $attribute);
-                    }
-                });
-            })
-            ->when($filters['attribute_not'] ?? null, function ($q, $attributesNot) {
-                foreach ($attributesNot as $attribute) {
-                    $q->whereJsonDoesntContain('attributes', $attribute);
-                }
-            })
-            ->when($filters['type'] ?? null, function ($q, $types) {
-                $q->where(function ($sub) use ($types) {
-                    foreach ($types as $type) {
-                        $sub->orWhereJsonContains('types', $type);
-                    }
-                });
-            })
-            ->when($filters['type_not'] ?? null, function ($q, $typesNot) {
-                foreach ($typesNot as $type) {
-                    $q->whereJsonDoesntContain('types', $type);
-                }
-            })
+            ->when($filters['attribute'] ?? null, fn ($q, $attributes) => $this->whereJsonContainsAny($q, 'attributes', $attributes))
+            ->when($filters['attribute_not'] ?? null, fn ($q, $attributesNot) => $this->whereJsonDoesntContainAll($q, 'attributes', $attributesNot))
+            ->when($filters['type'] ?? null, fn ($q, $types) => $this->whereJsonContainsAny($q, 'types', $types))
+            ->when($filters['type_not'] ?? null, fn ($q, $typesNot) => $this->whereJsonDoesntContainAll($q, 'types', $typesNot))
             ->when($filters['keyword'] ?? null, function ($q, $keywords) {
                 $q->where(function ($sub) use ($keywords) {
                     foreach ($keywords as $keyword) {
@@ -136,18 +118,43 @@ class Card extends Model
             })
             ->when($filters['card_set'] ?? null, fn ($q, $cardSet) => $q->whereIn('card_set', $cardSet))
             ->when($filters['card_set_not'] ?? null, fn ($q, $cardSetNot) => $q->whereNotIn('card_set', $cardSetNot))
-            ->when(isset($filters['has_trigger']), fn ($q) => $filters['has_trigger']
-                ? $q->whereNotNull('trigger')
-                : $q->whereNull('trigger')
-            )
-            ->when(isset($filters['has_effect']), fn ($q) => $filters['has_effect']
-                ? $q->whereNotNull('effect')
-                : $q->whereNull('effect')
-            )
-            ->when(isset($filters['has_counter']), fn ($q) => $filters['has_counter']
-                ? $q->whereNotNull('counter')
-                : $q->whereNull('counter')
-            )
+            ->when(isset($filters['has_trigger']), function ($q) use ($filters) {
+                $filters['has_trigger'] ? $q->whereNotNull('trigger') : $q->whereNull('trigger');
+            })
+            ->when(isset($filters['has_effect']), function ($q) use ($filters) {
+                $filters['has_effect'] ? $q->whereNotNull('effect') : $q->whereNull('effect');
+            })
+            ->when(isset($filters['has_counter']), function ($q) use ($filters) {
+                $filters['has_counter'] ? $q->whereNotNull('counter') : $q->whereNull('counter');
+            })
             ->when($filters['alt_art'] ?? false, fn ($q) => $q->whereNotNull('alt_art_variant'));
+    }
+
+    /**
+     * Constrain the query to rows where the JSON column contains any of the given values (OR logic).
+     *
+     * @param  Builder<Card>  $query
+     * @param  array<int, mixed>  $values
+     */
+    private function whereJsonContainsAny(Builder $query, string $column, array $values): void
+    {
+        $query->where(function ($sub) use ($column, $values) {
+            foreach ($values as $value) {
+                $sub->orWhereJsonContains($column, $value);
+            }
+        });
+    }
+
+    /**
+     * Constrain the query to rows where the JSON column does not contain any of the given values (AND NOT logic).
+     *
+     * @param  Builder<Card>  $query
+     * @param  array<int, mixed>  $values
+     */
+    private function whereJsonDoesntContainAll(Builder $query, string $column, array $values): void
+    {
+        foreach ($values as $value) {
+            $query->whereJsonDoesntContain($column, $value);
+        }
     }
 }

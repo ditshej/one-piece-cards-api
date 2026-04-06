@@ -31,12 +31,34 @@ The system SHALL accept an array of card_set values and return cards from any of
 
 ---
 
+### Requirement: Filter by multiple categories using array notation
+The system SHALL accept an array of category values and return cards matching any of them. Valid values remain Character, Event, Leader, Stage.
+
+#### Scenario: Filter by two categories
+- **WHEN** `GET /api/v1/cards?category[]=Character&category[]=Leader` is called
+- **THEN** only cards with category Character or Leader are returned
+
+#### Scenario: Invalid category value returns 422
+- **WHEN** `GET /api/v1/cards?category[]=Invalid` is called
+- **THEN** a 422 response is returned
+
+---
+
 ### Requirement: Filter by multiple types using array notation
 The system SHALL accept an array of type values and return cards whose types array contains at least one of the specified types.
 
 #### Scenario: Filter by two types
 - **WHEN** `GET /api/v1/cards?type[]=Minks&type[]=Strawhats` is called
 - **THEN** only cards whose types array contains Minks OR Strawhats are returned
+
+---
+
+### Requirement: Filter by multiple attributes using array notation
+The system SHALL accept an array of attribute values and return cards whose attributes array contains at least one of the specified attributes.
+
+#### Scenario: Filter by two attributes
+- **WHEN** `GET /api/v1/cards?attribute[]=Wisdom&attribute[]=Strike` is called
+- **THEN** only cards whose attributes array contains Wisdom OR Strike are returned
 
 ---
 

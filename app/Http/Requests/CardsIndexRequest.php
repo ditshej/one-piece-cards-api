@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Card;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CardsIndexRequest extends FormRequest
@@ -13,7 +14,7 @@ class CardsIndexRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        foreach (['cost', 'power', 'color', 'rarity', 'card_set', 'category', 'type', 'attribute', 'keyword', 'counter', 'color_not', 'rarity_not', 'card_set_not', 'category_not', 'type_not', 'attribute_not', 'keyword_not', 'cost_not', 'power_not', 'counter_not'] as $param) {
+        foreach (Card::ARRAY_FILTER_PARAMS as $param) {
             if ($this->has($param) && ! is_array($this->$param)) {
                 $this->merge([$param => [$this->$param]]);
             }

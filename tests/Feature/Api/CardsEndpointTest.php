@@ -452,3 +452,236 @@ it('filters cards by multiple power values using array notation', function () {
 it('returns 422 for non-integer power array item', function () {
     $this->getJson('/api/v1/cards?power[]=abc')->assertUnprocessable();
 });
+
+it('excludes cards by color_not', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['colors' => ['Red']]);
+    Card::factory()->for($pack)->create(['colors' => ['Blue']]);
+    Card::factory()->for($pack)->create(['colors' => ['Red', 'Green']]);
+
+    $response = $this->getJson('/api/v1/cards?color_not[]=Red')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(1)
+        ->and($response->json('data.0.colors'))->toBe(['Blue']);
+});
+
+it('excludes cards by multiple rarity_not values', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['rarity' => 'C']);
+    Card::factory()->for($pack)->create(['rarity' => 'UC']);
+    Card::factory()->for($pack)->create(['rarity' => 'R']);
+
+    $response = $this->getJson('/api/v1/cards?rarity_not[]=C&rarity_not[]=UC')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(1)
+        ->and($response->json('data.0.rarity'))->toBe('R');
+});
+
+it('excludes cards by card_set_not', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['card_set' => 'OP01']);
+    Card::factory()->for($pack)->create(['card_set' => 'OP01']);
+    Card::factory()->for($pack)->create(['card_set' => 'OP02']);
+
+    $response = $this->getJson('/api/v1/cards?card_set_not[]=OP01')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(1)
+        ->and($response->json('data.0.card_set'))->toBe('OP02');
+});
+
+it('excludes cards by category_not', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['category' => 'Leader']);
+    Card::factory()->for($pack)->create(['category' => 'Character']);
+    Card::factory()->for($pack)->create(['category' => 'Event']);
+
+    $response = $this->getJson('/api/v1/cards?category_not[]=Leader')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('returns 422 for invalid category_not value', function () {
+    $this->getJson('/api/v1/cards?category_not[]=Invalid')->assertUnprocessable();
+});
+
+it('excludes cards by type_not', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['types' => ['Navy']]);
+    Card::factory()->for($pack)->create(['types' => ['Straw Hat Crew']]);
+    Card::factory()->for($pack)->create(['types' => ['Navy', 'Pirate']]);
+
+    $response = $this->getJson('/api/v1/cards?type_not[]=Navy')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(1)
+        ->and($response->json('data.0.types'))->toBe(['Straw Hat Crew']);
+});
+
+it('excludes cards by attribute_not', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['attributes' => ['Slash']]);
+    Card::factory()->for($pack)->create(['attributes' => ['Strike']]);
+    Card::factory()->for($pack)->create(['attributes' => ['Wisdom']]);
+
+    $response = $this->getJson('/api/v1/cards?attribute_not[]=Slash')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('excludes cards with either attribute when using multiple attribute_not values', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['attributes' => ['Slash']]);
+    Card::factory()->for($pack)->create(['attributes' => ['Strike']]);
+    Card::factory()->for($pack)->create(['attributes' => ['Wisdom']]);
+    Card::factory()->for($pack)->create(['attributes' => ['Slash', 'Strike']]);
+
+    $response = $this->getJson('/api/v1/cards?attribute_not[]=Slash&attribute_not[]=Strike')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(1)
+        ->and($response->json('data.0.attributes'))->toBe(['Wisdom']);
+});
+
+it('excludes cards with keyword_not matching effect or trigger', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['effect' => '[Blocker] Guard this.', 'trigger' => 'Do nothing.']);
+    Card::factory()->for($pack)->create(['effect' => 'Attack now.', 'trigger' => '[Blocker] Activate.']);
+    Card::factory()->for($pack)->create(['effect' => 'Draw 2 cards.', 'trigger' => 'Draw 1 card.']);
+
+    $response = $this->getJson('/api/v1/cards?keyword_not[]=Blocker')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(1);
+});
+
+it('excludes cards by multiple cost_not values', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['cost' => 9]);
+    Card::factory()->for($pack)->create(['cost' => 10]);
+    Card::factory()->for($pack)->create(['cost' => 5]);
+
+    $response = $this->getJson('/api/v1/cards?cost_not[]=9&cost_not[]=10')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(1)
+        ->and($response->json('data.0.cost'))->toBe(5);
+});
+
+it('returns 422 for non-integer cost_not value', function () {
+    $this->getJson('/api/v1/cards?cost_not[]=abc')->assertUnprocessable();
+});
+
+it('excludes cards by power_not', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['power' => 9000]);
+    Card::factory()->for($pack)->create(['power' => 5000]);
+    Card::factory()->for($pack)->create(['power' => 3000]);
+
+    $response = $this->getJson('/api/v1/cards?power_not[]=9000')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('returns 422 for non-integer power_not value', function () {
+    $this->getJson('/api/v1/cards?power_not[]=abc')->assertUnprocessable();
+});
+
+it('filters cards by counter value', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['counter' => 1000]);
+    Card::factory()->for($pack)->create(['counter' => 2000]);
+    Card::factory()->for($pack)->create(['counter' => null]);
+
+    $response = $this->getJson('/api/v1/cards?counter[]=1000')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(1)
+        ->and($response->json('data.0.counter'))->toBe(1000);
+});
+
+it('filters cards by multiple counter values using array notation', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['counter' => 1000]);
+    Card::factory()->for($pack)->create(['counter' => 2000]);
+    Card::factory()->for($pack)->create(['counter' => null]);
+
+    $response = $this->getJson('/api/v1/cards?counter[]=1000&counter[]=2000')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('returns 422 for non-integer counter value', function () {
+    $this->getJson('/api/v1/cards?counter[]=abc')->assertUnprocessable();
+});
+
+it('excludes cards by counter_not including cards with null counter', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['counter' => 1000]);
+    Card::factory()->for($pack)->create(['counter' => 2000]);
+    Card::factory()->for($pack)->create(['counter' => null]);
+
+    $response = $this->getJson('/api/v1/cards?counter_not[]=2000')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('filters cards with a trigger using has_trigger=true', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['trigger' => 'Draw 1 card.']);
+    Card::factory()->for($pack)->create(['trigger' => null]);
+    Card::factory()->for($pack)->create(['trigger' => 'Add 1 DON!!.']);
+
+    $response = $this->getJson('/api/v1/cards?has_trigger=true')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('filters cards without a trigger using has_trigger=false', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['trigger' => 'Draw 1 card.']);
+    Card::factory()->for($pack)->create(['trigger' => null]);
+    Card::factory()->for($pack)->create(['trigger' => null]);
+
+    $response = $this->getJson('/api/v1/cards?has_trigger=false')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('filters cards with an effect using has_effect=true', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['effect' => '[Blocker] Guard.']);
+    Card::factory()->for($pack)->create(['effect' => null]);
+    Card::factory()->for($pack)->create(['effect' => 'Draw 2 cards.']);
+
+    $response = $this->getJson('/api/v1/cards?has_effect=true')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('filters cards without an effect using has_effect=false', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['effect' => '[Blocker] Guard.']);
+    Card::factory()->for($pack)->create(['effect' => null]);
+    Card::factory()->for($pack)->create(['effect' => null]);
+
+    $response = $this->getJson('/api/v1/cards?has_effect=false')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('filters cards with a counter using has_counter=true', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['counter' => 1000]);
+    Card::factory()->for($pack)->create(['counter' => null]);
+    Card::factory()->for($pack)->create(['counter' => 2000]);
+
+    $response = $this->getJson('/api/v1/cards?has_counter=true')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('filters cards without a counter using has_counter=false', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['counter' => 1000]);
+    Card::factory()->for($pack)->create(['counter' => null]);
+    Card::factory()->for($pack)->create(['counter' => null]);
+
+    $response = $this->getJson('/api/v1/cards?has_counter=false')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});

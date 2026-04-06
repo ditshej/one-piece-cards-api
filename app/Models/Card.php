@@ -40,15 +40,17 @@ class Card extends Model
     /**
      * Apply all supported filter parameters from an associative array.
      *
-     * Supported keys: color, category, cost, cost_min, cost_max, power, power_min, power_max,
-     * pack_label, search, name, rarity, attribute, type, keyword, card_set, alt_art.
+     * Supported keys: color, color_not, category, category_not, cost, cost_min, cost_max, cost_not,
+     * power, power_min, power_max, power_not, counter, counter_not, pack_label, search, name,
+     * rarity, rarity_not, attribute, attribute_not, type, type_not, keyword, keyword_not,
+     * card_set, card_set_not, has_trigger, has_effect, has_counter, alt_art.
      *
      * @param  Builder<Card>  $query
      * @param  array<string, mixed>  $filters
      */
     public function scopeApplyFilters(Builder $query, array $filters): void
     {
-        foreach (['cost', 'power', 'color', 'rarity', 'card_set', 'category', 'type', 'attribute', 'keyword'] as $param) {
+        foreach (['cost', 'power', 'color', 'rarity', 'card_set', 'category', 'type', 'attribute', 'keyword', 'counter', 'color_not', 'rarity_not', 'card_set_not', 'category_not', 'type_not', 'attribute_not', 'keyword_not', 'cost_not', 'power_not', 'counter_not'] as $param) {
             if (isset($filters[$param]) && ! is_array($filters[$param])) {
                 $filters[$param] = [$filters[$param]];
             }
@@ -62,13 +64,27 @@ class Card extends Model
                     }
                 });
             })
+            ->when($filters['color_not'] ?? null, function ($q, $colorsNot) {
+                foreach ($colorsNot as $color) {
+                    $q->whereJsonDoesntContain('colors', $color);
+                }
+            })
             ->when($filters['category'] ?? null, fn ($q, $category) => $q->whereIn('category', $category))
+            ->when($filters['category_not'] ?? null, fn ($q, $categoryNot) => $q->whereNotIn('category', $categoryNot))
             ->when($filters['cost'] ?? null, fn ($q, $cost) => $q->whereIn('cost', $cost))
             ->when(isset($filters['cost_min']), fn ($q) => $q->where('cost', '>=', $filters['cost_min']))
             ->when(isset($filters['cost_max']), fn ($q) => $q->where('cost', '<=', $filters['cost_max']))
+            ->when($filters['cost_not'] ?? null, fn ($q, $costNot) => $q->whereNotIn('cost', $costNot))
             ->when($filters['power'] ?? null, fn ($q, $power) => $q->whereIn('power', $power))
             ->when(isset($filters['power_min']), fn ($q) => $q->where('power', '>=', $filters['power_min']))
             ->when(isset($filters['power_max']), fn ($q) => $q->where('power', '<=', $filters['power_max']))
+            ->when($filters['power_not'] ?? null, fn ($q, $powerNot) => $q->whereNotIn('power', $powerNot))
+            ->when($filters['counter'] ?? null, fn ($q, $counter) => $q->whereIn('counter', $counter))
+            ->when($filters['counter_not'] ?? null, function ($q, $counterNot) {
+                $q->where(function ($sub) use ($counterNot) {
+                    $sub->whereNotIn('counter', $counterNot)->orWhereNull('counter');
+                });
+            })
             ->when($filters['pack_label'] ?? null, fn ($q, $label) => $q->whereHas('pack', fn ($r) => $r->where('label', $label)))
             ->when($filters['search'] ?? null, fn ($q, $search) => $q->where(
                 fn ($sub) => $sub->where('effect', 'LIKE', "%{$search}%")
@@ -76,6 +92,7 @@ class Card extends Model
             ))
             ->when($filters['name'] ?? null, fn ($q, $name) => $q->where('name', 'LIKE', "%{$name}%"))
             ->when($filters['rarity'] ?? null, fn ($q, $rarity) => $q->whereIn('rarity', $rarity))
+            ->when($filters['rarity_not'] ?? null, fn ($q, $rarityNot) => $q->whereNotIn('rarity', $rarityNot))
             ->when($filters['attribute'] ?? null, function ($q, $attributes) {
                 $q->where(function ($sub) use ($attributes) {
                     foreach ($attributes as $attribute) {
@@ -83,12 +100,22 @@ class Card extends Model
                     }
                 });
             })
+            ->when($filters['attribute_not'] ?? null, function ($q, $attributesNot) {
+                foreach ($attributesNot as $attribute) {
+                    $q->whereJsonDoesntContain('attributes', $attribute);
+                }
+            })
             ->when($filters['type'] ?? null, function ($q, $types) {
                 $q->where(function ($sub) use ($types) {
                     foreach ($types as $type) {
                         $sub->orWhereJsonContains('types', $type);
                     }
                 });
+            })
+            ->when($filters['type_not'] ?? null, function ($q, $typesNot) {
+                foreach ($typesNot as $type) {
+                    $q->whereJsonDoesntContain('types', $type);
+                }
             })
             ->when($filters['keyword'] ?? null, function ($q, $keywords) {
                 $q->where(function ($sub) use ($keywords) {
@@ -98,7 +125,29 @@ class Card extends Model
                     }
                 });
             })
+            ->when($filters['keyword_not'] ?? null, function ($q, $keywordsNot) {
+                foreach ($keywordsNot as $keyword) {
+                    $q->where(function ($sub) use ($keyword) {
+                        $sub->whereNull('effect')->orWhere('effect', 'NOT LIKE', "%[{$keyword}]%");
+                    })->where(function ($sub) use ($keyword) {
+                        $sub->whereNull('trigger')->orWhere('trigger', 'NOT LIKE', "%[{$keyword}]%");
+                    });
+                }
+            })
             ->when($filters['card_set'] ?? null, fn ($q, $cardSet) => $q->whereIn('card_set', $cardSet))
+            ->when($filters['card_set_not'] ?? null, fn ($q, $cardSetNot) => $q->whereNotIn('card_set', $cardSetNot))
+            ->when(isset($filters['has_trigger']), fn ($q) => $filters['has_trigger']
+                ? $q->whereNotNull('trigger')
+                : $q->whereNull('trigger')
+            )
+            ->when(isset($filters['has_effect']), fn ($q) => $filters['has_effect']
+                ? $q->whereNotNull('effect')
+                : $q->whereNull('effect')
+            )
+            ->when(isset($filters['has_counter']), fn ($q) => $filters['has_counter']
+                ? $q->whereNotNull('counter')
+                : $q->whereNull('counter')
+            )
             ->when($filters['alt_art'] ?? false, fn ($q) => $q->whereNotNull('alt_art_variant'));
     }
 }

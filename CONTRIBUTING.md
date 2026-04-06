@@ -25,24 +25,31 @@ No squash merges — full history stays on `main`. Rebase before merging to keep
 ### Workflow per Change
 
 ```bash
+# 0. Explore (optional)
+# /opsx:explore — investigate before proposing
+# → Present findings to user, wait for OK
+
 # 1. Create a feature branch
 git checkout -b feat/<change-name>
 
-# 2. Propose the change (generates proposal, specs, design, tasks)
+# 2. Propose (generates proposal, specs, design, tasks)
 /opsx:propose
-
-# 3. Commit the artifacts before implementing
 git add openspec/ && git commit -m "docs(<change-name>): add proposal, design and tasks"
+# → Present proposal summary to user, wait for OK before implementing
 
-# 4. Implement (TDD — tests first)
+# 3. Implement (TDD — tests first)
 /opsx:apply
 
-# 5. Verify — checks Completeness, Correctness, Coherence against specs
+# 4. Verify — checks Completeness, Correctness, Coherence against specs
 /opsx:verify
 # → Fix all CRITICALs before proceeding
 
+# 5. AI Review
+# Spawn laravel-simplifier (or php-library-reviewer) agents
+# → Fix critical findings, commit
+# → Present change summary + manual review instructions → wait for user OK
+
 # 6. Human review — don't proceed until approved
-# Open a PR or share git diff main...HEAD for review
 
 # 7. Archive the change
 /opsx:archive
@@ -62,6 +69,8 @@ feat(card-filtering): add color filter to cards endpoint
 fix(card-filtering): correct empty result handling
 docs(card-filtering): archive change
 ```
+
+Write `feat` and `fix` messages as user-facing descriptions — they appear in the changelog.
 
 ## TDD
 

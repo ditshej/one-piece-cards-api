@@ -355,3 +355,100 @@ it('returns 422 for non-integer cost array item', function () {
 it('returns 422 for per_page above maximum', function () {
     $this->getJson('/api/v1/cards?per_page=999')->assertUnprocessable();
 });
+
+it('filters cards by multiple colors using array notation', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['colors' => ['Red']]);
+    Card::factory()->for($pack)->create(['colors' => ['Blue']]);
+    Card::factory()->for($pack)->create(['colors' => ['Yellow']]);
+    Card::factory()->for($pack)->create(['colors' => ['Green']]);
+
+    $response = $this->getJson('/api/v1/cards?color[]=Red&color[]=Yellow')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('filters cards by multiple rarities using array notation', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['rarity' => 'SR']);
+    Card::factory()->for($pack)->create(['rarity' => 'SEC']);
+    Card::factory()->for($pack)->create(['rarity' => 'R']);
+
+    $response = $this->getJson('/api/v1/cards?rarity[]=SR&rarity[]=SEC')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('filters cards by multiple card sets using array notation', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['id' => 'OP13-001']);
+    Card::factory()->for($pack)->create(['id' => 'OP15-001']);
+    Card::factory()->for($pack)->create(['id' => 'OP01-099']);
+
+    $response = $this->getJson('/api/v1/cards?card_set[]=OP13&card_set[]=OP15')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('filters cards by multiple categories using array notation', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['category' => 'Character']);
+    Card::factory()->for($pack)->create(['category' => 'Leader']);
+    Card::factory()->for($pack)->create(['category' => 'Event']);
+
+    $response = $this->getJson('/api/v1/cards?category[]=Character&category[]=Leader')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('returns 422 for invalid category array value', function () {
+    $this->getJson('/api/v1/cards?category[]=Invalid')->assertUnprocessable();
+});
+
+it('filters cards by multiple types using array notation', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['types' => ['Minks']]);
+    Card::factory()->for($pack)->create(['types' => ['Strawhats']]);
+    Card::factory()->for($pack)->create(['types' => ['Navy']]);
+
+    $response = $this->getJson('/api/v1/cards?type[]=Minks&type[]=Strawhats')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('filters cards by multiple attributes using array notation', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['attributes' => ['Wisdom']]);
+    Card::factory()->for($pack)->create(['attributes' => ['Strike']]);
+    Card::factory()->for($pack)->create(['attributes' => ['Slash']]);
+
+    $response = $this->getJson('/api/v1/cards?attribute[]=Wisdom&attribute[]=Strike')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('filters cards by multiple keywords using array notation', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['effect' => '[Blocker] Do something', 'trigger' => null]);
+    Card::factory()->for($pack)->create(['effect' => '[Rush] Attack immediately', 'trigger' => null]);
+    Card::factory()->for($pack)->create(['effect' => 'Draw 2 cards', 'trigger' => null]);
+
+    $response = $this->getJson('/api/v1/cards?keyword[]=Blocker&keyword[]=Rush')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('filters cards by multiple power values using array notation', function () {
+    $pack = Pack::factory()->create();
+    Card::factory()->for($pack)->create(['power' => 8000]);
+    Card::factory()->for($pack)->create(['power' => 10000]);
+    Card::factory()->for($pack)->create(['power' => 5000]);
+
+    $response = $this->getJson('/api/v1/cards?power[]=8000&power[]=10000')->assertOk();
+
+    expect($response->json('data'))->toHaveCount(2);
+});
+
+it('returns 422 for non-integer power array item', function () {
+    $this->getJson('/api/v1/cards?power[]=abc')->assertUnprocessable();
+});

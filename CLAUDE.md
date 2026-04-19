@@ -184,7 +184,7 @@ All project artifacts are written in **English**:
 
 **Rule:** Every new feature or significant change ALWAYS starts with `/opsx:propose` — never implement directly, not even in Plan Mode. Only after the propose commit may `/opsx:apply` begin.
 
-Each OpenSpec change gets its own feature branch. No squash merges — full history stays on `main`.
+Every OpenSpec change gets its own feature branch and lands on `main` as a single merge commit (`--no-ff`). No squash, no rebase-merge. No direct push to `main` — always via PR with CI passing.
 
 ### Branch Naming Convention
 
@@ -231,21 +231,31 @@ openspec new change "<change-name>"
 # /opsx:archive — close change, merge specs
 # → Commit: "docs(<change-name>): archive change"
 
-# 7. Merge to main (no squash!)
-git checkout main
-git merge feat/<change-name>
-git push
-git branch -d feat/<change-name>
+# 7. Clean up fixup commits and push
+git fetch origin && git rebase -i --autosquash origin/main   # collapses `fixup!` commits; no-op otherwise
+git push -u origin feat/<change-name>
+gh pr create --title "feat(<change-name>): <description>"
+# → CI must pass (tests + lint), then merge via GitHub ("Create a merge commit")
+
+# 8. Merge and cleanup
+gh pr merge --merge --delete-branch
+git checkout main && git pull && git remote prune origin
 ```
 
 ### Resulting History on main
 
 ```
-* docs(list-packs): archive change
-* refactor(list-packs): apply review feedback
-* feat(list-packs): add packs() and pack() endpoints
-* docs(list-packs): add proposal, design and tasks
+*   Merge pull request #43 from feat/list-packs
+|\
+| * docs(list-packs): archive change
+| * refactor(list-packs): apply review feedback
+| * feat(list-packs): add packs() and pack() endpoints
+| * docs(list-packs): add proposal, design and tasks
+|/
+*   Merge pull request #42 from feat/prev-change
 ```
+
+Use `git log --first-parent main` to see only the merge commits (one per change).
 
 Each feature follows: Planning → Implementation → Verify → Review → Archiving.
 Use the change name as commit scope for every commit on that branch.

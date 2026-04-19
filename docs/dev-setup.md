@@ -208,7 +208,7 @@ This test is automatically enforced via the pre-commit hook — a command withou
 
 ## 6. Git + OpenSpec Feature Branch Flow
 
-Every OpenSpec change gets its own feature branch. No squash merge — the full history stays on `main`.
+Every OpenSpec change gets its own feature branch and lands on `main` as a single merge commit (`--no-ff`). No squash, no rebase-merge. No direct push to `main` — always via PR with CI passing.
 
 ### Branch Naming Convention
 
@@ -219,55 +219,107 @@ feat/<change-name>      # e.g. feat/import-cards-command
 ### Workflow per Change
 
 ```bash
+# 0. Explore (optional)
+# /opsx:explore — investigate ideas and requirements before proposing
+# → CHECKPOINT: Present findings to user → wait for OK before proposing
+
 # 1. Create branch
 git checkout -b feat/<change-name>
 
-# 2. Create & plan OpenSpec change
+# 2. Propose
 openspec new change "<change-name>"
-# → create proposal.md, specs/, design.md, tasks.md
+# /opsx:propose — create proposal.md, specs/, design.md, tasks.md
 # → Commit: "docs(<change-name>): add proposal, design and tasks"
+# → CHECKPOINT: Present proposal summary → wait for OK before implementing
 
 # 3. Implementation (TDD)
 # /opsx:apply — work through tasks
+# → Commit(s): "feat(<change-name>): ...", "test(<change-name>): ...", etc.
 
-# 4. Code Review
-# a) laravel-simplifier Agent — automated review
-# b) Fix findings, then commit
-# c) Agent provides code overview (architecture, files, tests)
-#    + manual testing instructions if UI/endpoints are affected
-# d) User reviews themselves (PhpStorm, GitHub PR, or git diff main...HEAD)
-# → Don't proceed until user OK!
-# → Commit(s): "feat(<change-name>): ...", "refactor(<change-name>): ...", etc.
+# 4. Verify
+# /opsx:verify — checks Completeness, Correctness, Coherence against specs
+# → Fix all CRITICALs before proceeding
 
-# Keep feature branch current: rebase instead of merge
-git fetch origin && git rebase origin/main
+# 5. AI Review
+# laravel-simplifier Agent — automated review (spawn parallel subagents)
+# → Fix critical findings, commit: "refactor(<change-name>): apply review feedback"
+# → CHECKPOINT: Present change summary + manual review instructions
+#   → Wait for user OK before archiving
 
-# 5. Archiving
+# 6. Archiving
 # /opsx:archive — close change, merge specs
 # → Commit: "docs(<change-name>): archive change"
 
-# 6. Merge to main (no squash!)
-git checkout main
-git merge feat/<change-name>
-git push
-git branch -d feat/<change-name>
+# 7. Clean up fixup commits and push
+git fetch origin && git rebase -i --autosquash origin/main   # collapses `fixup!` commits; no-op otherwise
+git push -u origin feat/<change-name>
+gh pr create --title "feat(<change-name>): <description>"
+# → CI must pass (tests + lint), then merge via GitHub ("Create a merge commit")
+
+# 8. Merge and cleanup
+gh pr merge --merge --delete-branch
+git checkout main && git pull && git remote prune origin
 ```
+
+> `--delete-branch` deletes the remote branch on GitHub. `git remote prune origin` removes stale remote-tracking refs locally. The local branch is cleaned up automatically by `gh pr merge`.
 
 ### Resulting History on main
 
 ```
-* docs(import-cards-command): archive change
-* refactor(import-cards-command): apply review feedback
-* feat(import-cards-command): add cards:import artisan command
-* docs(import-cards-command): add proposal, design and tasks
-* docs(pack-and-card-models): archive change
-* feat(pack-and-card-models): add Pack and Card models with migrations and factories
-* docs(pack-and-card-models): add proposal, design and tasks
+*   Merge pull request #43 from feat/import-cards-command
+|\
+| * docs(import-cards-command): archive change
+| * refactor(import-cards-command): apply review feedback
+| * feat(import-cards-command): add cards:import artisan command
+| * docs(import-cards-command): add proposal, design and tasks
+|/
+*   Merge pull request #42 from feat/pack-and-card-models
+|\
+| * docs(pack-and-card-models): archive change
+| * feat(pack-and-card-models): add Pack and Card models with migrations and factories
+| * docs(pack-and-card-models): add proposal, design and tasks
+|/
 ```
 
-Each feature follows: Planning → Implementation → Review (optional) → Archiving.
+Each OpenSpec change becomes one merge-commit node on `main`'s first-parent history. Use `git log --first-parent main` to see just the change-level nodes. Use `git log --graph --oneline` to see the full graph including feature-branch commits.
+
+Each feature follows: Explore → Propose → Implement → Verify → AI Review → Archive → PR → Merge.
 Use the change name as commit scope for every commit on that branch.
 Multiple commits per phase are fine — commit as often as makes sense (feat, fix, test, refactor, etc.).
+
+### Feature branch hygiene
+
+Because every feature-branch commit lands on `main` via the merge commit's second parent, WIP commits ("wip", "fix typo", "argh") would leak into the permanent history. Use `--fixup` + `--autosquash` to keep the branch clean without manual interactive rebases:
+
+```bash
+# During work — instead of a generic "fix" commit, mark the fixup explicitly
+git commit --fixup=<target-sha>
+# Produces a commit with message "fixup! <target commit subject>"
+
+# Before pushing — collapse all fixup! commits into their targets
+git rebase -i --autosquash origin/main
+# Git pre-orders the TODO list; you usually just :wq
+```
+
+Make `--autosquash` the default so you don't need to remember the flag:
+
+```bash
+git config --global rebase.autosquash true
+```
+
+Use this only for small corrections (typos, follow-up tweaks). New meaningful commits stay normal. The goal: the commits that reach `main` should each stand on their own.
+
+### Bisecting on `main`
+
+`git bisect` finds the commit that introduced a bug via binary search. With merge commits, a naive bisect may land on an intermediate feature-branch commit (possibly with failing tests that aren't the regression you're hunting). Restrict bisect to the merge-commit nodes on `main`:
+
+```bash
+git bisect start --first-parent <bad-ref> <good-ref>
+# Or set as default globally:
+git config --global bisect.firstParent true
+```
+
+With `--first-parent`, each bisect step selects one OpenSpec change as a whole — the granularity that matters for production regressions.
 
 ## 7. Set up Deployment
 
@@ -375,7 +427,7 @@ OpenSpec changes: use change name as scope for every commit on that branch.
 Multiple commits per phase are fine (feat, fix, test, refactor, etc.).
 
 ## Git Flow
-Feature branches: `feat/<change-name>`. No squash merges. Full history on main.
+Feature branches: `feat/<change-name>`. Merge into `main` as merge commits (`--no-ff`) — no squash, no rebase-merge. Full history on main.
 
 ## TDD
 Tests first, then implementation.
@@ -505,6 +557,28 @@ Add deny rules to `~/.claude/settings.json`. These apply even in bypass mode (`-
 ```
 
 Reference: [Safety Nets for Claude Code](https://cbox.dk/blog/safety-nets-for-claude-code-skip-permissions)
+
+## 16. Branch Protection (GitHub Ruleset)
+
+After the CI workflow has run at least once, configure a branch ruleset on GitHub (Settings → Rules → Rulesets → New branch ruleset):
+
+1. **Ruleset Name:** `main-protection`
+2. **Enforcement status:** Active
+3. **Target branches:** Include by pattern → `main`
+4. **Branch rules:**
+   - **Require a pull request before merging** (Required approvals: 0 for solo projects)
+   - **Require status checks to pass** → Add checks: `tests`, `lint`
+   - **Allowed merge methods:** Merge commits only (no squash, no rebase-merge)
+   - **Require linear history:** OFF — merge commits are incompatible with this setting
+5. **Bypass list:** Leave empty (even admins go through PRs)
+
+> **Note:** The status checks `tests` and `lint` only appear in the dropdown after the workflow has run at least once on `main`.
+
+Also configure **Settings → General**:
+
+- Enable **"Automatically delete head branches"** so merged PR branches are cleaned up on GitHub.
+- Under **Pull Requests**: enable **"Allow merge commits"**, disable **"Allow squash merging"** and **"Allow rebase merging"**.
+- Under **Pull Requests → Default commit message for merge commits**: select **"Pull request title"** so merge commits inherit the PR's conventional-commit subject (e.g. `feat(list-packs): add packs() endpoint`).
 
 ---
 

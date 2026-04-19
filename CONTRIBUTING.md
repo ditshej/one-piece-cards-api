@@ -20,7 +20,7 @@ Every change gets its own branch:
 git checkout -b feat/<change-name>   # e.g. feat/card-filtering
 ```
 
-No squash merges — full history stays on `main`. Rebase before merging to keep the branch current.
+Merge commits (`--no-ff`) preserve each change as one node on `main`. No squash, no rebase-merge. No direct push to `main` — always via PR with CI passing. Clean up the feature branch with `--fixup` / `--autosquash` before pushing.
 
 ### Workflow per Change
 
@@ -54,11 +54,15 @@ git add openspec/ && git commit -m "docs(<change-name>): add proposal, design an
 # 7. Archive the change
 /opsx:archive
 
-# 8. Rebase onto main before merging
-git fetch origin && git rebase origin/main
+# 8. Clean up fixup commits and push
+git fetch origin && git rebase -i --autosquash origin/main   # no-op if no `fixup!` commits
+git push -u origin feat/<change-name>
+gh pr create --title "feat(<change-name>): <description>"
+# → CI must pass (tests + lint), then merge via GitHub ("Create a merge commit")
 
-# 9. Merge (no squash)
-git checkout main && git merge feat/<change-name>
+# 9. Merge and cleanup
+gh pr merge --merge --delete-branch
+git checkout main && git pull && git remote prune origin
 ```
 
 Use the change name as the commit scope on every commit on that branch:

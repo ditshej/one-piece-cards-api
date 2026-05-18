@@ -46,6 +46,36 @@ The system SHALL provide a `create-token.sh` script that reads SSH credentials f
 - **WHEN** `./create-token.sh` is called without name and email arguments
 - **THEN** the script exits with a non-zero status and a usage message
 
+### Requirement: Artisan command lists all tokens with metadata
+The system SHALL provide `php artisan token:list` which displays all Sanctum Personal Access Tokens in a table with columns: ID, Name, User (email), Last used, Created. An optional `--json` flag SHALL output the tokens as a JSON array for scripting. When no tokens exist, the command SHALL display an informational message and exit successfully.
+
+#### Scenario: Tokens are listed in a table
+- **WHEN** `php artisan token:list` is executed
+- **AND** at least one token exists
+- **THEN** a table is printed with columns `ID`, `Name`, `User`, `Last used`, `Created`
+- **AND** each row contains the token name and the associated user's email address
+- **AND** the command exits successfully
+
+#### Scenario: No tokens exist
+- **WHEN** `php artisan token:list` is executed
+- **AND** no tokens exist
+- **THEN** an informational message is displayed (e.g. "No tokens found.")
+- **AND** the command exits successfully
+
+#### Scenario: JSON output with --json flag
+- **WHEN** `php artisan token:list --json` is executed
+- **THEN** a JSON array is printed containing token metadata (id, name, email, last_used_at, created_at)
+- **AND** the command exits successfully
+
+### Requirement: Local script lists tokens on the remote server via SSH
+The system SHALL support `./create-token.sh --list` which SSHes to the server and runs `php artisan token:list` remotely, printing the table in the local terminal.
+
+#### Scenario: Successful remote token listing
+- **WHEN** `.env.deploy` exists with valid credentials
+- **AND** `./create-token.sh --list` is executed
+- **THEN** the script SSHes into the server and runs `php artisan token:list` in `DEPLOY_PATH`
+- **AND** the token table is printed in the local terminal
+
 ### Requirement: API documentation explains token acquisition for consumers
 The Scramble API description (`config/scramble.php` `info.description`) SHALL explicitly state that the API requires a Bearer token and that consumers must contact the owner to obtain one.
 

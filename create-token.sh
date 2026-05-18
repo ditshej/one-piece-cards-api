@@ -12,6 +12,11 @@ set +a
 
 PHP=${DEPLOY_PHP:-php}
 
+if [ "$1" = "--list" ]; then
+    ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "cd $DEPLOY_PATH && $PHP artisan token:list"
+    exit 0
+fi
+
 if [ "$1" = "--revoke" ]; then
     if [ -z "$2" ]; then
         echo "Usage: ./create-token.sh --revoke \"App Name\""
@@ -25,6 +30,7 @@ fi
 if [ -z "$1" ] || [ -z "$2" ]; then
     echo "Usage: ./create-token.sh \"App Name\" \"email@example.com\""
     echo "       ./create-token.sh --revoke \"App Name\""
+    echo "       ./create-token.sh --list"
     exit 1
 fi
 

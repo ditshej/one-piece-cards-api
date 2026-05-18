@@ -135,6 +135,16 @@ Issue a token on the production server via SSH (run locally):
 
 The plaintext token is printed once — store it securely. The script reads SSH credentials from `.env.deploy`.
 
+To list all tokens:
+
+```bash
+# Via SSH wrapper (run locally)
+./create-token.sh --list
+
+# Directly on any environment
+php artisan token:list
+```
+
 To revoke a token:
 
 ```bash

@@ -23,27 +23,27 @@ class TokenList extends Command
             return self::SUCCESS;
         }
 
-        $rows = $tokens->map(fn (PersonalAccessToken $token) => [
-            $token->id,
-            $token->name,
-            $token->tokenable?->email ?? '—',
-            $token->last_used_at?->diffForHumans() ?? 'Never',
-            $token->created_at->toDateTimeString(),
+        $data = $tokens->map(fn (PersonalAccessToken $token) => [
+            'id' => $token->id,
+            'name' => $token->name,
+            'email' => $token->tokenable?->email,
+            'last_used_at' => $token->last_used_at?->toIso8601String(),
+            'created_at' => $token->created_at->toIso8601String(),
         ]);
 
         if ($this->option('json')) {
-            $data = $tokens->map(fn (PersonalAccessToken $token) => [
-                'id' => $token->id,
-                'name' => $token->name,
-                'email' => $token->tokenable?->email,
-                'last_used_at' => $token->last_used_at?->toIso8601String(),
-                'created_at' => $token->created_at->toIso8601String(),
-            ]);
-
-            $this->line(json_encode($data, JSON_PRETTY_PRINT));
+            $this->line($data->toJson(JSON_PRETTY_PRINT));
 
             return self::SUCCESS;
         }
+
+        $rows = $tokens->map(fn (PersonalAccessToken $token) => [
+            $token->id,
+            $token->name,
+            $token->tokenable?->email ?? 'N/A',
+            $token->last_used_at?->diffForHumans() ?? 'Never',
+            $token->created_at->toDateTimeString(),
+        ]);
 
         $this->table(['ID', 'Name', 'User', 'Last used', 'Created'], $rows);
 

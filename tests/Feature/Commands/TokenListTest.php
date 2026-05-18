@@ -20,11 +20,11 @@ it('shows a friendly message when no tokens exist', function () {
         ->expectsOutputToContain('No tokens found');
 });
 
-it('outputs json when --json flag is passed', function () {
+it('outputs valid json when --json flag is passed', function () {
     $user = User::factory()->create(['email' => 'luffy@apps.test']);
     $user->createToken('Luffy Tracker');
 
     $this->artisan('token:list', ['--json' => true])
         ->assertSuccessful()
-        ->expectsOutputToContain('Luffy Tracker');
+        ->expectsOutputToContain('"name": "Luffy Tracker"');
 });

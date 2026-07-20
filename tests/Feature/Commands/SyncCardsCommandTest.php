@@ -100,6 +100,34 @@ it('fails when scp fails', function () {
         ->assertFailed();
 });
 
+it('fails when the remote mkdir fails', function () {
+    Process::fake([
+        '*mkdir*' => Process::result(errorOutput: 'Permission denied', exitCode: 1),
+        '*' => Process::result(exitCode: 0),
+    ]);
+
+    $this->artisan('cards:sync')
+        ->expectsOutputToContain('Could not create remote json directory')
+        ->assertFailed();
+
+    Process::assertDidntRun(fn ($p) => is_array($p->command) && in_array('scp', $p->command));
+});
+
+it('fails when the remote cards:import fails', function () {
+    Process::fake([
+        '*cards:import*' => Process::result(errorOutput: 'Import error', exitCode: 1),
+        '*' => Process::result(exitCode: 0),
+    ]);
+
+    $this->artisan('cards:sync')
+        ->expectsOutputToContain('Remote import failed')
+        ->assertFailed();
+
+    Process::assertDidntRun(fn ($p) => is_array($p->command)
+        && collect($p->command)->contains(fn ($arg) => str_contains($arg, 'optimize:clear'))
+    );
+});
+
 it('fails when local json directory is missing or empty', function () {
     File::deleteDirectory(config('import.vegapull_path'));
 

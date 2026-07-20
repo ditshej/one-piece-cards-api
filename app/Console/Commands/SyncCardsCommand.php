@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Process\ProcessResult;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 
@@ -32,9 +33,11 @@ class SyncCardsCommand extends Command
         }
 
         $localJsonDir = config('import.vegapull_path').'/json';
+        $packsFile = config('import.vegapull_packs_file');
+        $cardsGlob = config('import.vegapull_cards_glob');
 
         if (! File::isDirectory($localJsonDir)
-            || (! File::exists($localJsonDir.'/packs.json') && File::glob($localJsonDir.'/cards_*.json') === [])
+            || (! File::exists("{$localJsonDir}/{$packsFile}") && File::glob("{$localJsonDir}/{$cardsGlob}") === [])
         ) {
             $this->error("No card JSON found at: {$localJsonDir}");
 
@@ -45,10 +48,13 @@ class SyncCardsCommand extends Command
 
         $this->info('Ensuring remote json directory exists...');
 
-        Process::run([
-            'ssh', "{$user}@{$host}", '-p', $port,
-            "mkdir -p {$remoteJsonDir}",
-        ]);
+        $mkdirResult = $this->ssh($user, $host, $port, "mkdir -p {$remoteJsonDir}");
+
+        if ($mkdirResult->failed()) {
+            $this->error('Could not create remote json directory: '.$mkdirResult->errorOutput());
+
+            return self::FAILURE;
+        }
 
         $this->info('Uploading card json to production...');
 
@@ -62,10 +68,7 @@ class SyncCardsCommand extends Command
 
         $this->info('Importing card data on production...');
 
-        $importResult = Process::run([
-            'ssh', "{$user}@{$host}", '-p', $port,
-            "cd {$path} && {$php} artisan cards:import",
-        ]);
+        $importResult = $this->ssh($user, $host, $port, "cd {$path} && {$php} artisan cards:import");
 
         if ($importResult->failed()) {
             $this->error('Remote import failed: '.$importResult->errorOutput());
@@ -75,10 +78,7 @@ class SyncCardsCommand extends Command
 
         $this->info('Clearing production cache...');
 
-        $sshResult = Process::run([
-            'ssh', "{$user}@{$host}", '-p', $port,
-            "cd {$path} && {$php} artisan optimize:clear",
-        ]);
+        $sshResult = $this->ssh($user, $host, $port, "cd {$path} && {$php} artisan optimize:clear");
 
         if ($sshResult->failed()) {
             $this->warn('Cache clear failed: '.$sshResult->errorOutput());
@@ -87,5 +87,10 @@ class SyncCardsCommand extends Command
         $this->info('Sync complete.');
 
         return self::SUCCESS;
+    }
+
+    private function ssh(string $user, string $host, string $port, string $remoteCommand): ProcessResult
+    {
+        return Process::run(['ssh', "{$user}@{$host}", '-p', $port, $remoteCommand]);
     }
 }

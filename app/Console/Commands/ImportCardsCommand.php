@@ -20,7 +20,7 @@ class ImportCardsCommand extends Command
 
         $packs = $this->loadPacks($jsonPath);
 
-        $cardFiles = File::glob($jsonPath.'/cards_*.json');
+        $cardFiles = File::glob($jsonPath.'/'.config('import.vegapull_cards_glob'));
 
         if (empty($cardFiles)) {
             $this->warn('No card JSON files found in: '.$jsonPath);
@@ -92,7 +92,7 @@ class ImportCardsCommand extends Command
      */
     private function loadPacks(string $jsonPath): array
     {
-        $packsFile = $jsonPath.'/packs.json';
+        $packsFile = $jsonPath.'/'.config('import.vegapull_packs_file');
 
         if (! File::exists($packsFile)) {
             return [];

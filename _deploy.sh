@@ -10,7 +10,7 @@ if [ "$current_branch" != "main" ]; then
     exit 1
 fi
 
-if ! git diff-index --quiet HEAD --; then
+if ! git -c core.fileMode=false diff-index --quiet HEAD --; then
     echo "Deploy aborted: uncommitted changes in the server working tree." >&2
     echo "Inspect on the server with: git status" >&2
     exit 1

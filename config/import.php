@@ -9,4 +9,5 @@ return [
     'sync_user' => env('SYNC_USER'),
     'sync_port' => env('SYNC_PORT', 22),
     'sync_path' => env('SYNC_PATH'),
+    'sync_php' => env('SYNC_PHP', 'php'),
 ];

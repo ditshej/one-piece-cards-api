@@ -1,6 +1,6 @@
 ## 1. Tests (TDD — write/update before implementing)
 
-- [ ] 1.1 Update `tests/Feature/Commands/SyncCardsCommandTest.php` to the new behaviour:
+- [x] 1.1 Update `tests/Feature/Commands/SyncCardsCommandTest.php` to the new behaviour:
   - Keep `it('fails when sync config is missing')` — unchanged.
   - Add a `beforeEach`/helper that creates a fake local JSON dir (`storage/vegapull/json/` with `packs.json` + one `cards_*.json`), or fakes its existence, so precondition checks pass.
   - Replace `it('uploads the database via scp')` with `it('uploads the card json directory via scp')`: assert an `scp` run whose command contains the JSON path (`storage/vegapull/json`) **and** does NOT contain `database.sqlite`.
@@ -14,13 +14,13 @@
 
 ## 2. Config
 
-- [ ] 2.1 Add `'sync_php' => env('SYNC_PHP', 'php')` to `config/import.php`.
-- [ ] 2.2 Add `SYNC_PHP=` (with a comment noting the prod value, e.g. `/opt/php83/bin/php`) to `.env.example`, near the other `SYNC_*` keys.
-- [ ] 2.3 Set `SYNC_PHP=/opt/php83/bin/php` in the local `.env` (next to the existing `SYNC_*` values) so the operator's sync targets the correct remote PHP immediately. Note: `cards:sync` runs locally, so this local value determines the remote PHP path.
+- [x] 2.1 Add `'sync_php' => env('SYNC_PHP', 'php')` to `config/import.php`.
+- [x] 2.2 Add `SYNC_PHP=` (with a comment noting the prod value, e.g. `/opt/php83/bin/php`) to `.env.example`, near the other `SYNC_*` keys.
+- [x] 2.3 Set `SYNC_PHP=/opt/php83/bin/php` in the local `.env` (next to the existing `SYNC_*` values) so the operator's sync targets the correct remote PHP immediately. Note: `cards:sync` runs locally, so this local value determines the remote PHP path.
 
 ## 3. Command Implementation
 
-- [ ] 3.1 Rewrite `app/Console/Commands/SyncCardsCommand.php` `handle()`:
+- [x] 3.1 Rewrite `app/Console/Commands/SyncCardsCommand.php` `handle()`:
   - Keep the config guard (`sync_host`/`sync_user`/`sync_path`) and the `--fetch` → `cards:fetch` step.
   - Resolve `$localJsonDir = config('import.vegapull_path').'/json'`; fail (`FAILURE`) before any remote action if it is missing or contains no `packs.json`/`cards_*.json`.
   - Read `$php = config('import.sync_php')` for the remote `artisan` calls (no hardcoded path).
@@ -36,6 +36,6 @@
 
 ## 5. Cleanup & Verification
 
-- [ ] 5.1 Run `vendor/bin/pint --dirty --format agent`.
-- [ ] 5.2 Run `php artisan test --compact --filter=SyncCards` — all sync tests green.
-- [ ] 5.3 Sanity: `php artisan cards:sync --help` and confirm the command body no longer transfers `database.sqlite`.
+- [x] 5.1 Run `vendor/bin/pint --dirty --format agent`.
+- [x] 5.2 Run `php artisan test --compact --filter=SyncCards` — all sync tests green.
+- [x] 5.3 Sanity: `php artisan cards:sync --help` and confirm the command body no longer transfers `database.sqlite`.

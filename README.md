@@ -45,7 +45,7 @@ php artisan token:create "My App" "me@example.com"
 |---------|-------------|
 | `php artisan cards:fetch` | Fetch from Bandai via vegapull and import |
 | `php artisan cards:import <path>` | Import from existing vegapull JSON files |
-| `php artisan cards:sync` | Upload local SQLite DB to production server |
+| `php artisan cards:sync` | Upload local card JSON to production and run `cards:import` there |
 
 ---
 
@@ -122,6 +122,23 @@ Then deploy:
 ```
 
 Builds frontend assets, uploads them via rsync, and runs `_deploy.sh` on the server (git pull, composer install, migrate, optimize).
+
+### Card Sync
+
+`cards:sync` uploads the local vegapull card JSON to production and runs `cards:import` there — it never transfers the SQLite database, so production auth/session/token data is untouched. Configure it via the following variables in the local `.env` (not `.env.deploy` — the command runs locally and reads `config('import.*')`):
+
+| Variable | Description |
+|----------|-------------|
+| `SYNC_HOST` | SSH hostname or IP of the production server |
+| `SYNC_USER` | SSH username |
+| `SYNC_PORT` | SSH port (default: `22`) |
+| `SYNC_PATH` | Absolute path to the project on the server |
+| `SYNC_PHP` | Path to PHP binary on the server (default: `php`, e.g. `/opt/php83/bin/php` in production) |
+
+```bash
+php artisan cards:sync            # sync existing local JSON
+php artisan cards:sync --fetch    # refresh from Bandai first, then sync
+```
 
 ---
 

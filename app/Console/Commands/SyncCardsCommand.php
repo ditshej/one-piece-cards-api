@@ -5,10 +5,12 @@ namespace App\Console\Commands;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Process\ProcessResult;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 
 #[Signature('cards:sync {--fetch : Run cards:fetch before syncing}')]
-#[Description('Sync local SQLite database to the production server')]
+#[Description('Sync local card JSON to the production server and import it there')]
 class SyncCardsCommand extends Command
 {
     public function handle(): int
@@ -17,6 +19,7 @@ class SyncCardsCommand extends Command
         $user = config('import.sync_user');
         $port = (string) config('import.sync_port');
         $path = config('import.sync_path');
+        $php = config('import.sync_php');
 
         if (! $host || ! $user || ! $path) {
             $this->error('Sync config missing. Set SYNC_HOST, SYNC_USER, and SYNC_PATH in .env.');
@@ -29,19 +32,34 @@ class SyncCardsCommand extends Command
             $this->call('cards:fetch');
         }
 
-        $localDb = database_path('database.sqlite');
+        $localJsonDir = config('import.vegapull_path').'/json';
+        $packsFile = config('import.vegapull_packs_file');
+        $cardsGlob = config('import.vegapull_cards_glob');
 
-        if (! file_exists($localDb)) {
-            $this->error("Database file not found at: {$localDb}");
+        $hasCardJson = File::exists("{$localJsonDir}/{$packsFile}") || File::glob("{$localJsonDir}/{$cardsGlob}") !== [];
+
+        if (! File::isDirectory($localJsonDir) || ! $hasCardJson) {
+            $this->error("No card JSON found at: {$localJsonDir}");
 
             return self::FAILURE;
         }
 
-        $remoteDb = "{$path}/database/database.sqlite";
+        $target = "{$user}@{$host}";
+        $remoteJsonDir = "{$path}/".config('import.vegapull_relative_path').'/json';
 
-        $this->info('Uploading database to production...');
+        $this->info('Ensuring remote json directory exists...');
 
-        $scpResult = Process::run(['scp', '-P', $port, $localDb, "{$user}@{$host}:{$remoteDb}"]);
+        $mkdirResult = $this->ssh($target, $port, "mkdir -p {$remoteJsonDir}");
+
+        if ($mkdirResult->failed()) {
+            $this->error('Could not create remote json directory: '.$mkdirResult->errorOutput());
+
+            return self::FAILURE;
+        }
+
+        $this->info('Uploading card json to production...');
+
+        $scpResult = Process::run(['scp', '-r', '-P', $port, "{$localJsonDir}/.", "{$target}:{$remoteJsonDir}/"]);
 
         if ($scpResult->failed()) {
             $this->error('SCP failed: '.$scpResult->errorOutput());
@@ -49,12 +67,19 @@ class SyncCardsCommand extends Command
             return self::FAILURE;
         }
 
+        $this->info('Importing card data on production...');
+
+        $importResult = $this->ssh($target, $port, "cd {$path} && {$php} artisan cards:import");
+
+        if ($importResult->failed()) {
+            $this->error('Remote import failed: '.$importResult->errorOutput());
+
+            return self::FAILURE;
+        }
+
         $this->info('Clearing production cache...');
 
-        $sshResult = Process::run([
-            'ssh', "{$user}@{$host}", '-p', $port,
-            "cd {$path} && /opt/php83/bin/php artisan optimize:clear",
-        ]);
+        $sshResult = $this->ssh($target, $port, "cd {$path} && {$php} artisan optimize:clear");
 
         if ($sshResult->failed()) {
             $this->warn('Cache clear failed: '.$sshResult->errorOutput());
@@ -63,5 +88,10 @@ class SyncCardsCommand extends Command
         $this->info('Sync complete.');
 
         return self::SUCCESS;
+    }
+
+    private function ssh(string $target, string $port, string $remoteCommand): ProcessResult
+    {
+        return Process::run(['ssh', $target, '-p', $port, $remoteCommand]);
     }
 }

@@ -2,9 +2,24 @@
 
 use App\Models\Card;
 use App\Models\Pack;
+use App\Models\User;
 
 beforeEach(function () {
     $this->fixturePath = __DIR__.'/../../Fixtures/vegapull';
+});
+
+it('never writes to auth tables', function () {
+    $user = User::factory()->create();
+    $token = $user->createToken('test-token');
+    $originalAttributes = $user->only(['name', 'email', 'password']);
+
+    $this->artisan('cards:import', ['path' => $this->fixturePath])
+        ->assertSuccessful();
+
+    expect(User::count())->toBe(1)
+        ->and($user->refresh()->only(['name', 'email', 'password']))->toBe($originalAttributes)
+        ->and($user->tokens()->count())->toBe(1)
+        ->and($user->tokens()->first()->id)->toBe($token->accessToken->id);
 });
 
 it('imports packs and cards from vegapull JSON files', function () {

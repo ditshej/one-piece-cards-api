@@ -1,4 +1,4 @@
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: cards:sync uploads card JSON to production and imports remotely
 The system SHALL provide an Artisan command `cards:sync` that uploads the local vegapull card JSON files (`storage/vegapull/json/`, containing `packs.json` and `cards_*.json`) to the configured production server via SCP, then runs `php artisan cards:import` on the server via SSH. The command SHALL NOT transfer `database/database.sqlite` or any database file, so that production auth data (`users`, `sessions`, `personal_access_tokens`) is never overwritten by a sync.

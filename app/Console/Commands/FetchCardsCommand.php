@@ -58,7 +58,7 @@ class FetchCardsCommand extends Command
     /** @return list<string> */
     private function getPackIds(string $path): array
     {
-        $packsFile = $path.'/json/packs.json';
+        $packsFile = $path.'/json/'.config('import.vegapull_packs_file');
 
         if (! File::exists($packsFile)) {
             return [];

@@ -36,19 +36,20 @@ class SyncCardsCommand extends Command
         $packsFile = config('import.vegapull_packs_file');
         $cardsGlob = config('import.vegapull_cards_glob');
 
-        if (! File::isDirectory($localJsonDir)
-            || (! File::exists("{$localJsonDir}/{$packsFile}") && File::glob("{$localJsonDir}/{$cardsGlob}") === [])
-        ) {
+        $hasCardJson = File::exists("{$localJsonDir}/{$packsFile}") || File::glob("{$localJsonDir}/{$cardsGlob}") !== [];
+
+        if (! File::isDirectory($localJsonDir) || ! $hasCardJson) {
             $this->error("No card JSON found at: {$localJsonDir}");
 
             return self::FAILURE;
         }
 
-        $remoteJsonDir = "{$path}/storage/vegapull/json";
+        $target = "{$user}@{$host}";
+        $remoteJsonDir = "{$path}/".config('import.vegapull_relative_path').'/json';
 
         $this->info('Ensuring remote json directory exists...');
 
-        $mkdirResult = $this->ssh($user, $host, $port, "mkdir -p {$remoteJsonDir}");
+        $mkdirResult = $this->ssh($target, $port, "mkdir -p {$remoteJsonDir}");
 
         if ($mkdirResult->failed()) {
             $this->error('Could not create remote json directory: '.$mkdirResult->errorOutput());
@@ -58,7 +59,7 @@ class SyncCardsCommand extends Command
 
         $this->info('Uploading card json to production...');
 
-        $scpResult = Process::run(['scp', '-r', '-P', $port, "{$localJsonDir}/.", "{$user}@{$host}:{$remoteJsonDir}/"]);
+        $scpResult = Process::run(['scp', '-r', '-P', $port, "{$localJsonDir}/.", "{$target}:{$remoteJsonDir}/"]);
 
         if ($scpResult->failed()) {
             $this->error('SCP failed: '.$scpResult->errorOutput());
@@ -68,7 +69,7 @@ class SyncCardsCommand extends Command
 
         $this->info('Importing card data on production...');
 
-        $importResult = $this->ssh($user, $host, $port, "cd {$path} && {$php} artisan cards:import");
+        $importResult = $this->ssh($target, $port, "cd {$path} && {$php} artisan cards:import");
 
         if ($importResult->failed()) {
             $this->error('Remote import failed: '.$importResult->errorOutput());
@@ -78,7 +79,7 @@ class SyncCardsCommand extends Command
 
         $this->info('Clearing production cache...');
 
-        $sshResult = $this->ssh($user, $host, $port, "cd {$path} && {$php} artisan optimize:clear");
+        $sshResult = $this->ssh($target, $port, "cd {$path} && {$php} artisan optimize:clear");
 
         if ($sshResult->failed()) {
             $this->warn('Cache clear failed: '.$sshResult->errorOutput());
@@ -89,8 +90,8 @@ class SyncCardsCommand extends Command
         return self::SUCCESS;
     }
 
-    private function ssh(string $user, string $host, string $port, string $remoteCommand): ProcessResult
+    private function ssh(string $target, string $port, string $remoteCommand): ProcessResult
     {
-        return Process::run(['ssh', "{$user}@{$host}", '-p', $port, $remoteCommand]);
+        return Process::run(['ssh', $target, '-p', $port, $remoteCommand]);
     }
 }

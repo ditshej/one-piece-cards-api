@@ -89,39 +89,39 @@ it('clears production cache after upload', function () {
     );
 });
 
-it('fails when scp fails', function () {
+it('fails when a remote step fails', function (string $failingPattern, string $expectedOutput) {
     Process::fake([
-        '*scp*' => Process::result(errorOutput: 'Connection refused', exitCode: 1),
+        $failingPattern => Process::result(errorOutput: 'boom', exitCode: 1),
         '*' => Process::result(exitCode: 0),
     ]);
 
     $this->artisan('cards:sync')
-        ->expectsOutputToContain('SCP failed')
+        ->expectsOutputToContain($expectedOutput)
         ->assertFailed();
-});
+})->with([
+    'scp' => ['*scp*', 'SCP failed'],
+    'remote mkdir' => ['*mkdir*', 'Could not create remote json directory'],
+    'remote cards:import' => ['*cards:import*', 'Remote import failed'],
+]);
 
-it('fails when the remote mkdir fails', function () {
+it('stops before scp when the remote mkdir fails', function () {
     Process::fake([
-        '*mkdir*' => Process::result(errorOutput: 'Permission denied', exitCode: 1),
+        '*mkdir*' => Process::result(errorOutput: 'boom', exitCode: 1),
         '*' => Process::result(exitCode: 0),
     ]);
 
-    $this->artisan('cards:sync')
-        ->expectsOutputToContain('Could not create remote json directory')
-        ->assertFailed();
+    $this->artisan('cards:sync')->assertFailed();
 
     Process::assertDidntRun(fn ($p) => is_array($p->command) && in_array('scp', $p->command));
 });
 
-it('fails when the remote cards:import fails', function () {
+it('stops before optimize:clear when the remote cards:import fails', function () {
     Process::fake([
-        '*cards:import*' => Process::result(errorOutput: 'Import error', exitCode: 1),
+        '*cards:import*' => Process::result(errorOutput: 'boom', exitCode: 1),
         '*' => Process::result(exitCode: 0),
     ]);
 
-    $this->artisan('cards:sync')
-        ->expectsOutputToContain('Remote import failed')
-        ->assertFailed();
+    $this->artisan('cards:sync')->assertFailed();
 
     Process::assertDidntRun(fn ($p) => is_array($p->command)
         && collect($p->command)->contains(fn ($arg) => str_contains($arg, 'optimize:clear'))

@@ -16,5 +16,5 @@
 - **THEN** the script aborts with a non-zero status and an error message pointing at `git status`, without attempting the pull
 
 #### Scenario: `main` has diverged from `origin/main`
-- **WHEN** `_deploy.sh` is executed on `main` but the local `main` has commits not on `origin/main`
+- **WHEN** `_deploy.sh` is executed on `main` but the local `main` has diverged from `origin/main` (both sides have commits the other lacks)
 - **THEN** the fast-forward-only pull fails with a non-zero status rather than creating a merge commit on the server

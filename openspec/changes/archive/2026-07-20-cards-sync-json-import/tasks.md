@@ -32,7 +32,7 @@
 
 ## 4. Spec Update
 
-- [ ] 4.1 Apply the delta in `openspec/changes/cards-sync-json-import/specs/data-sync/spec.md` to `openspec/specs/data-sync/spec.md` at archive time (handled by `/opsx:archive`).
+- [x] 4.1 Apply the delta in `openspec/changes/cards-sync-json-import/specs/data-sync/spec.md` to `openspec/specs/data-sync/spec.md` at archive time (handled by `/opsx:archive`).
 
 ## 5. Cleanup & Verification
 

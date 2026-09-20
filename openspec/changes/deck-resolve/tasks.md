@@ -5,6 +5,7 @@
 - [ ] 1.3 Write failing tests for the advisory warnings: no leader, two leaders, main deck not 50, quantity above 4, trailing name disagreeing with the database
 - [ ] 1.4 Create `ResolveDeckCommand` with `#[Signature('deck:resolve {file} {--format=json}')]` and implement parsing and validation until 1.1–1.3 pass
 - [ ] 1.5 Verify a missing file and an unsupported `--format` value both abort with a descriptive message and non-zero status
+- [ ] 1.6 Write failing tests for input sources: file argument, piped stdin, explicit `-`, and the interactive hint on stderr; then make the `file` argument optional and read stdin when omitted or `-`
 
 ## 2. Resolution against the database
 

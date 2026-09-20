@@ -41,6 +41,21 @@ Blank lines and surrounding whitespace are ignored. Any other line is a parse er
 - **Why the optional `_p1` suffix in the ID pattern:** alt-art variants are real IDs in this database (`ST10-008_p3`), and a list containing one should resolve rather than fail.
 - **Trailing name is informational.** It is compared against the database name and a mismatch produces a warning, never an error. This catches a stale or hand-edited list — a renamed or mistyped card is worth flagging — without making the command reject input whose card numbers are perfectly valid. The card number is the identity; the name is a comment.
 
+### Deck list from a file or from standard input
+
+The `file` argument is optional. When it is omitted, or given as `-`, the command reads standard input.
+
+```bash
+php artisan deck:resolve deck.txt              # from a file
+pbpaste | php artisan deck:resolve             # straight from the clipboard
+php artisan deck:resolve                       # paste, then Ctrl-D
+php artisan deck:resolve - --format=markdown   # explicit stdin, for readability in scripts
+```
+
+- **Why:** requiring a file for a list that is being copied out of a deck builder adds a pointless step. Standard input is the ordinary shell idiom for this and makes the clipboard case a one-liner.
+- **When standard input is an interactive terminal** — no file given and nothing piped in — the command prints a short hint to stderr ("Paste the deck list, then press Ctrl-D") so it does not look hung. The hint goes to stderr, never stdout.
+- The file path, when given, must exist; a missing file is an error rather than a silent fall back to stdin.
+
 ### Errors abort, composition problems warn
 
 Two distinct classes, because they mean different things:

@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Deck list resolution command
-The system SHALL provide a `deck:resolve {file} {--format=json}` Artisan command that reads a deck list file and resolves every card number against the local `cards` table. The command SHALL NOT perform any network request; all card data SHALL come from the local database.
+The system SHALL provide a `deck:resolve {file?} {--format=json}` Artisan command that reads a deck list and resolves every card number against the local `cards` table. The command SHALL NOT perform any network request; all card data SHALL come from the local database.
 
 #### Scenario: Resolving a deck list to JSON
 - **WHEN** a user runs `php artisan deck:resolve deck.txt` with a file containing valid entries
@@ -18,6 +18,21 @@ The system SHALL provide a `deck:resolve {file} {--format=json}` Artisan command
 #### Scenario: Deck file does not exist
 - **WHEN** the given file path does not exist
 - **THEN** the command aborts with a non-zero status and an error naming the path
+
+### Requirement: Deck list accepted from a file or standard input
+The command SHALL read the deck list from the `file` argument when given, and from standard input when the argument is omitted or given as `-`. When the argument is omitted and standard input is an interactive terminal, the command SHALL print a hint to standard error.
+
+#### Scenario: Deck list piped in
+- **WHEN** a deck list is piped in, as in `pbpaste | php artisan deck:resolve`
+- **THEN** the command resolves it exactly as it would from a file
+
+#### Scenario: Explicit standard input
+- **WHEN** the file argument is given as `-`
+- **THEN** the command reads the deck list from standard input
+
+#### Scenario: Interactive paste
+- **WHEN** the command is run without a file argument and standard input is an interactive terminal
+- **THEN** a hint to paste the list and press Ctrl-D is written to standard error, and the pasted list is resolved once input ends
 
 ### Requirement: Accepted deck list line formats
 The command SHALL accept two line formats: `<quantity>x<card-id>` and `<quantity> <card-id> [card name]`. Blank lines and surrounding whitespace SHALL be ignored. The trailing card name SHALL be optional and informational only.

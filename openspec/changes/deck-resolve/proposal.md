@@ -8,7 +8,8 @@ The concrete trigger: an external assistant needs to analyse a 50-card deck and 
 
 ## What Changes
 
-- Add a `deck:resolve` Artisan command that reads a deck list file and resolves every card against the local `cards` table.
+- Add a `deck:resolve` Artisan command that reads a deck list and resolves every card against the local `cards` table.
+- Take the deck list from a file argument, or from standard input when the argument is omitted or given as `-`, so a list can be pasted or piped without saving it first.
 - Accept two line formats, both common in deck-builder exports:
   - `<quantity>x<card-id>` — e.g. `4xST01-011`
   - `<quantity> <card-id> [card name]` — e.g. `4 OP17-113 Streusen`; the trailing name is optional and informational

@@ -13,14 +13,14 @@
         "counter": null,
         "colors": ["Red"],
         "block_number": 1,
-        "types": ["Supernovas", "Straw Hat Crew"],
+        "types": ["Type Supernovas", "Straw Hat Crew"],
         "effect": "[DON!! x1] [Your Turn] All of your Characters gain +1000 power.",
         "trigger": null
     },
     {
         "id": "OP01-004",
         "pack_id": "569101",
-        "name": "Usopp",
+        "name": "Shachi &amp; Penguin",
         "rarity": "C",
         "category": "Character",
         "img_url": "../images/cardlist/card/OP01-004.png?260325",
@@ -51,6 +51,6 @@
         "block_number": 6,
         "types": ["Animal", "Alabasta"],
         "effect": null,
-        "trigger": "[Trigger] Play this card."
+        "trigger": "Trigger [Trigger] Play this card."
     }
 ]

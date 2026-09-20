@@ -82,6 +82,31 @@ missing from the database (all reported together).
 at most four copies of a card — and reports violations as warnings without changing the exit
 status. Warnings go to stderr, so redirecting stdout to a file yields the document alone.
 
+### Straight back into the clipboard
+
+Because the document goes to stdout and nothing else does, the shell can take it from there
+(`pbcopy` on macOS, `xclip -selection clipboard` or `wl-copy` elsewhere):
+
+```bash
+pbpaste | php artisan cards:resolve | pbcopy             # clipboard in, clipboard out
+pbpaste | php artisan cards:resolve | tee >(pbcopy)      # …and show it at the same time
+```
+
+Warnings still appear in the terminal either way, because they go to stderr.
+
+A shell function saves the typing and the `cd`:
+
+```bash
+# in ~/.zshrc
+deckdata() {
+  pbpaste | php /path/to/one-piece-cards-api/artisan cards:resolve "$@" | pbcopy \
+    && echo "Card data copied to the clipboard."
+}
+```
+
+Then `deckdata` resolves whatever is in the clipboard, and `deckdata --format=markdown --deck`
+does the same with deck checks and readable output.
+
 ---
 
 ## MCP Server

@@ -109,7 +109,12 @@ Because the document goes to stdout and nothing else does, the shell can take it
 ```bash
 pbpaste | php artisan cards:resolve | pbcopy             # clipboard in, clipboard out
 pbpaste | php artisan cards:resolve | tee >(pbcopy)      # …and show it at the same time
+php artisan cards:resolve | pbcopy                       # paste by hand, result to clipboard
 ```
+
+The last one combines both: standard input stays the keyboard while standard output goes into
+the pipe, so you paste the list, press Ctrl-D, and the document lands in the clipboard while
+the terminal shows only the hint and any warnings.
 
 Warnings still appear in the terminal either way, because they go to stderr.
 

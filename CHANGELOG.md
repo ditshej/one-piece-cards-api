@@ -48,6 +48,7 @@ All notable changes to this project will be documented in this file.
 - Add --revoke flag to create-token.sh
 - Add token:revoke command and refactor create-token.sh
 - Add TDD enforcement via pre-commit hook and arch test
+- Add cards:resolve command to resolve card lists as JSON or Markdown
 - **public-repo-readiness:** Add LICENSE, CONTRIBUTING, CHANGELOG, clean up internal docs
 - **multi-value-card-filters:** Support array notation for cost filter
 - **multi-value-filters-extended:** Extend all filters to accept array notation

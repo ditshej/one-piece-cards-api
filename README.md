@@ -49,6 +49,41 @@ php artisan token:create "My App" "me@example.com"
 
 ---
 
+## Resolving Card Lists
+
+`cards:resolve` turns a list of bare card numbers into full card data, read from the local
+database — no network access, no API token.
+
+```bash
+php artisan cards:resolve deck.txt                  # from a file, as JSON
+php artisan cards:resolve deck.txt --format=markdown # readable, for pasting into a chat
+pbpaste | php artisan cards:resolve                  # straight from the clipboard
+php artisan cards:resolve                            # paste, then press Ctrl-D
+php artisan cards:resolve - --deck > deck-data.json  # explicit stdin, with deck checks
+```
+
+**Input** — one entry per line, in either format; blank lines are ignored and the trailing
+card name is optional and informational:
+
+```
+4xST01-011
+4 OP17-113 Streusen
+```
+
+**Output** — `--format=json` (default) yields `leader`, `cards`, `totals` and `warnings`;
+`--format=markdown` yields a leader block, a card table and the effect and trigger text per
+card. Each entry carries quantity, id, name, category, colors, cost, power, counter, types,
+effect, trigger, rarity and card_set.
+
+**Errors abort:** malformed lines, quantities below 1, duplicate card IDs, and card IDs
+missing from the database (all reported together).
+
+**`--deck`** additionally checks deck composition — exactly one leader, 50 main deck cards,
+at most four copies of a card — and reports violations as warnings without changing the exit
+status. Warnings go to stderr, so redirecting stdout to a file yields the document alone.
+
+---
+
 ## MCP Server
 
 The API exposes an [MCP](https://modelcontextprotocol.io) server at `/mcp` for use with AI assistants (e.g. Claude). Available tools mirror the REST API:

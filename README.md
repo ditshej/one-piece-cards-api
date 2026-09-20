@@ -49,6 +49,90 @@ php artisan token:create "My App" "me@example.com"
 
 ---
 
+## Resolving Card Lists
+
+`cards:resolve` turns a list of bare card numbers into full card data, read from the local
+database — no network access, no API token.
+
+```bash
+php artisan cards:resolve deck.txt                  # from a file, as JSON
+php artisan cards:resolve deck.txt --format=markdown # readable, for pasting into a chat
+pbpaste | php artisan cards:resolve                  # straight from the clipboard
+php artisan cards:resolve                            # paste, then press Ctrl-D
+php artisan cards:resolve - --deck > deck-data.json  # explicit stdin, with deck checks
+```
+
+**Input** — one entry per line, in either format; blank lines are ignored and the trailing
+card name is optional and informational:
+
+```
+4xST01-011
+4 OP17-113 Streusen
+```
+
+**Output** — `--format=json` (default) yields `leader`, `cards`, `totals` and `warnings`;
+`--format=markdown` yields a leader block, a card table and the effect and trigger text per
+card. Each entry carries quantity, id, name, category, colors, cost, power, counter, types,
+effect, trigger, rarity and card_set.
+
+**Errors abort:** malformed lines, quantities below 1, duplicate card IDs, and card IDs
+missing from the database (all reported together).
+
+**`--deck`** additionally checks deck composition — exactly one leader, 50 main deck cards,
+at most four copies of a card — and reports violations as warnings without changing the exit
+status. Warnings go to stderr, so redirecting stdout to a file yields the document alone.
+
+### Pasting a list into the terminal
+
+Run the command with no file argument and it waits for the list on standard input, which is
+where a paste lands:
+
+```
+$ php artisan cards:resolve --format=markdown
+Paste the deck list, then press Ctrl-D.
+1 OP13-004 Sabo
+4xST01-011
+^D
+# Resolved Cards
+...
+```
+
+The hint appears immediately so the command does not look stuck, and it goes to stderr, so it
+stays out of a redirected file. Ctrl-D only takes effect at the start of a line: if the pasted
+text does not end in a newline, press Enter first, or Ctrl-D twice.
+
+### Straight back into the clipboard
+
+Because the document goes to stdout and nothing else does, the shell can take it from there
+(`pbcopy` on macOS, `xclip -selection clipboard` or `wl-copy` elsewhere):
+
+```bash
+pbpaste | php artisan cards:resolve | pbcopy             # clipboard in, clipboard out
+pbpaste | php artisan cards:resolve | tee >(pbcopy)      # …and show it at the same time
+php artisan cards:resolve | pbcopy                       # paste by hand, result to clipboard
+```
+
+The last one combines both: standard input stays the keyboard while standard output goes into
+the pipe, so you paste the list, press Ctrl-D, and the document lands in the clipboard while
+the terminal shows only the hint and any warnings.
+
+Warnings still appear in the terminal either way, because they go to stderr.
+
+A shell function saves the typing and the `cd`:
+
+```bash
+# in ~/.zshrc
+deckdata() {
+  pbpaste | php /path/to/one-piece-cards-api/artisan cards:resolve "$@" | pbcopy \
+    && echo "Card data copied to the clipboard."
+}
+```
+
+Then `deckdata` resolves whatever is in the clipboard, and `deckdata --format=markdown --deck`
+does the same with deck checks and readable output.
+
+---
+
 ## MCP Server
 
 The API exposes an [MCP](https://modelcontextprotocol.io) server at `/mcp` for use with AI assistants (e.g. Claude). Available tools mirror the REST API:

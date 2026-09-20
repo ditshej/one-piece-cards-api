@@ -4,14 +4,17 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 
 beforeEach(function () {
+    $this->vegapullPath = sys_get_temp_dir().'/sync-vegapull-'.uniqid();
+
     config([
         'import.sync_host' => 'example.com',
         'import.sync_user' => 'deploy-user',
         'import.sync_port' => 22,
         'import.sync_path' => '/op-cards.ditshej.ch',
+        'import.vegapull_path' => $this->vegapullPath,
     ]);
 
-    $jsonPath = config('import.vegapull_path').'/json';
+    $jsonPath = $this->vegapullPath.'/json';
 
     File::ensureDirectoryExists($jsonPath);
     File::put($jsonPath.'/packs.json', '{}');
@@ -19,7 +22,7 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    File::deleteDirectory(config('import.vegapull_path'));
+    File::deleteDirectory($this->vegapullPath);
 });
 
 it('fails when sync config is missing', function () {
@@ -129,7 +132,7 @@ it('stops before optimize:clear when the remote cards:import fails', function ()
 });
 
 it('fails when local json directory is missing or empty', function () {
-    File::deleteDirectory(config('import.vegapull_path'));
+    File::deleteDirectory($this->vegapullPath);
 
     Process::fake(['*' => Process::result(exitCode: 0)]);
 

@@ -1,15 +1,15 @@
 ## ADDED Requirements
 
 ### Requirement: Deck list resolution command
-The system SHALL provide a `deck:resolve {file?} {--format=json}` Artisan command that reads a deck list and resolves every card number against the local `cards` table. The command SHALL NOT perform any network request; all card data SHALL come from the local database.
+The system SHALL provide a `cards:resolve {file?} {--format=json} {--deck}` Artisan command that reads a deck list and resolves every card number against the local `cards` table. The command SHALL NOT perform any network request; all card data SHALL come from the local database.
 
 #### Scenario: Resolving a deck list to JSON
-- **WHEN** a user runs `php artisan deck:resolve deck.txt` with a file containing valid entries
-- **THEN** the command writes a JSON document to stdout containing the leader, the main deck in input order, and totals, and exits with status 0
+- **WHEN** a user runs `php artisan cards:resolve deck.txt` with a file containing valid entries
+- **THEN** the command writes a JSON document to stdout containing the leader, the remaining cards in input order, and totals, and exits with status 0
 
 #### Scenario: Resolving a deck list to Markdown
-- **WHEN** a user runs `php artisan deck:resolve deck.txt --format=markdown`
-- **THEN** the command writes a Markdown document to stdout containing a leader section, a main deck table, and the effect and trigger text per card, and exits with status 0
+- **WHEN** a user runs `php artisan cards:resolve deck.txt --format=markdown`
+- **THEN** the command writes a Markdown document to stdout containing a leader section, a card table, and the effect and trigger text per card, and exits with status 0
 
 #### Scenario: Unsupported format requested
 - **WHEN** a user passes a `--format` value other than `json` or `markdown`
@@ -23,7 +23,7 @@ The system SHALL provide a `deck:resolve {file?} {--format=json}` Artisan comman
 The command SHALL read the deck list from the `file` argument when given, and from standard input when the argument is omitted or given as `-`. When the argument is omitted and standard input is an interactive terminal, the command SHALL print a hint to standard error.
 
 #### Scenario: Deck list piped in
-- **WHEN** a deck list is piped in, as in `pbpaste | php artisan deck:resolve`
+- **WHEN** a deck list is piped in, as in `pbpaste | php artisan cards:resolve`
 - **THEN** the command resolves it exactly as it would from a file
 
 #### Scenario: Explicit standard input
@@ -68,31 +68,42 @@ The command SHALL reject input it cannot resolve correctly: quantities below 1, 
 - **WHEN** a deck list references three card IDs that do not exist in the database
 - **THEN** the command aborts with a non-zero status and an error listing all three IDs
 
-### Requirement: Composition problems are reported as warnings
-The command SHALL report deck-composition problems as warnings without aborting: a leader count other than one, a main deck other than 50 cards, more than four copies of a card, and a trailing card name that disagrees with the database. Output SHALL still be produced.
+### Requirement: Deck composition checks are opt-in
+The command SHALL check deck composition only when the `--deck` flag is given: exactly one leader, a 50-card main deck, and at most four copies of a card. Violations SHALL be reported as warnings without aborting, and SHALL NOT change the exit status. Without the flag, the command SHALL NOT emit composition warnings.
+
+#### Scenario: Short card list resolves without composition warnings
+- **WHEN** a list of five cards with no leader is resolved without `--deck`
+- **THEN** no composition warnings are emitted and the command exits with status 0
 
 #### Scenario: Deck list without a leader
-- **WHEN** a deck list contains no card whose category is `Leader`
+- **WHEN** a list is resolved with `--deck` and contains no card whose category is `Leader`
 - **THEN** the command emits a warning, sets `leader` to null in the output, and exits with status 0
 
 #### Scenario: Main deck size other than 50
-- **WHEN** the resolved main deck totals a number of cards other than 50
+- **WHEN** a list is resolved with `--deck` and the non-leader cards total a number other than 50
 - **THEN** the command emits a warning naming the actual total and exits with status 0
 
 #### Scenario: More than four copies of a card
-- **WHEN** an entry specifies a quantity greater than 4
+- **WHEN** a list is resolved with `--deck` and an entry specifies a quantity greater than 4
 - **THEN** the command emits a warning naming that card and exits with status 0
+
+#### Scenario: A legal deck produces no warnings
+- **WHEN** a list of one leader and 50 main deck cards, none exceeding four copies, is resolved with `--deck`
+- **THEN** no warnings are emitted and the command exits with status 0
+
+### Requirement: Trailing name mismatch always warns
+The command SHALL compare a supplied trailing card name against the name stored for that card ID and SHALL emit a warning on mismatch, regardless of the `--deck` flag. The entry SHALL be resolved from the card ID. A mismatch SHALL NOT abort resolution.
 
 #### Scenario: Trailing name disagrees with the database
 - **WHEN** a line supplies a trailing card name that differs from the name stored for that card ID
-- **THEN** the command emits a warning naming both the supplied and the stored name, and resolves the entry from the card ID
+- **THEN** the command emits a warning naming both the supplied and the stored name, resolves the entry from the card ID, and exits with status 0
 
 ### Requirement: Leader separated by card category
 The command SHALL identify the leader by the card's `category` field rather than by its position in the file.
 
 #### Scenario: Leader not on the first line
 - **WHEN** the leader entry appears somewhere other than the first line
-- **THEN** it is still reported as the leader and excluded from the main deck totals
+- **THEN** it is still reported as the leader and excluded from the card totals
 
 ### Requirement: Resolved card fields
 For every resolved entry the command SHALL output quantity, id, name, category, colors, cost, power, counter, types, effect, trigger, rarity, and card_set.
@@ -105,5 +116,5 @@ For every resolved entry the command SHALL output quantity, id, name, category, 
 The command SHALL write warnings to standard error and the JSON or Markdown document to standard output, so that redirecting standard output to a file yields the document alone.
 
 #### Scenario: Redirected output stays clean
-- **WHEN** a user runs `php artisan deck:resolve deck.txt > deck-data.json` on a list that produces warnings
+- **WHEN** a user runs `php artisan cards:resolve deck.txt > deck-data.json` on a list that produces warnings
 - **THEN** `deck-data.json` contains valid JSON only, and the warnings appear on the terminal

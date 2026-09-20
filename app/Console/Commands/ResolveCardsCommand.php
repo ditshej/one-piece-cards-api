@@ -34,7 +34,7 @@ class ResolveCardsCommand extends Command
         $format = $this->option('format');
 
         if (! in_array($format, self::FORMATS, true)) {
-            return $this->abort('Unsupported --format value "'.$format.'". Supported values: '.implode(', ', self::FORMATS).'.');
+            return $this->abortWith('Unsupported --format value "'.$format.'". Supported values: '.implode(', ', self::FORMATS).'.');
         }
 
         $list = $this->readList();
@@ -43,18 +43,20 @@ class ResolveCardsCommand extends Command
             return self::FAILURE;
         }
 
-        $entries = $this->parse($list, $parseErrors);
+        ['entries' => $entries, 'errors' => $parseErrors] = $this->parse($list);
 
         if ($parseErrors !== []) {
-            return $this->abort(...$parseErrors);
+            return $this->abortWith(...$parseErrors);
         }
 
-        $cards = Card::whereIn('id', array_column($entries, 'id'))->get()->keyBy('id');
+        $ids = collect($entries)->pluck('id');
 
-        $unknownIds = array_values(array_diff(array_column($entries, 'id'), $cards->keys()->all()));
+        $cards = Card::whereIn('id', $ids)->get()->keyBy('id');
+
+        $unknownIds = $ids->diff($cards->keys())->values()->all();
 
         if ($unknownIds !== []) {
-            return $this->abort(
+            return $this->abortWith(
                 'Unknown card IDs: '.implode(', ', $unknownIds).'.',
                 'The local database may be out of date — run "php artisan cards:fetch" to update it.',
             );
@@ -104,7 +106,7 @@ class ResolveCardsCommand extends Command
 
         if ($file !== null && $file !== '-') {
             if (! File::exists($file)) {
-                $this->abort('Deck list file not found: '.$file);
+                $this->abortWith('Deck list file not found: '.$file);
 
                 return null;
             }
@@ -141,10 +143,9 @@ class ResolveCardsCommand extends Command
     }
 
     /**
-     * @param  list<string>  $errors
-     * @return list<array{line: int, quantity: int, id: string, name: ?string}>
+     * @return array{entries: list<array{line: int, quantity: int, id: string, name: ?string}>, errors: list<string>}
      */
-    private function parse(string $list, ?array &$errors): array
+    private function parse(string $list): array
     {
         $errors = [];
         $entries = [];
@@ -189,7 +190,7 @@ class ResolveCardsCommand extends Command
             ];
         }
 
-        return $entries;
+        return ['entries' => $entries, 'errors' => $errors];
     }
 
     /**
@@ -353,7 +354,7 @@ class ResolveCardsCommand extends Command
         }
     }
 
-    private function abort(string ...$messages): int
+    private function abortWith(string ...$messages): int
     {
         foreach ($messages as $message) {
             $this->writeToError($message);

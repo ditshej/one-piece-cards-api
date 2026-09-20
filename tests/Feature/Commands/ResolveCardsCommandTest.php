@@ -53,7 +53,7 @@ function resolveJson(array $parameters = [], ?string $stdin = null): array
 
 function deckListFile(string $contents): string
 {
-    $path = tempnam(sys_get_temp_dir(), 'deck').'.txt';
+    $path = sys_get_temp_dir().'/'.uniqid('deck-', true).'.txt';
     file_put_contents($path, $contents);
 
     return $path;

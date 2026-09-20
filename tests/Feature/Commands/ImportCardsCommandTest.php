@@ -119,10 +119,12 @@ it('strips the scraped Trigger label from the trigger text', function () {
     expect(Card::find('OP01-006')->trigger)->toBe('[Trigger] Play this card.');
 });
 
-it('decodes HTML entities in card names', function () {
+it('decodes HTML entities in card name and effect', function () {
     $this->artisan('cards:import', ['path' => $this->fixturePath]);
 
-    expect(Card::find('OP01-004')->name)->toBe('Shachi & Penguin');
+    expect(Card::find('OP01-004'))
+        ->name->toBe('Shachi & Penguin')
+        ->effect->toBe('[On Play] Rest Shachi & Penguin.');
 });
 
 it('decodes HTML entities in pack names', function () {
@@ -148,7 +150,7 @@ it('decodes HTML entities in pack names', function () {
             'power' => 5000,
             'counter' => null,
             'colors' => ['Red'],
-            'types' => ['Type Whitebeard Pirates'],
+            'types' => ['Whitebeard Pirates'],
             'effect' => null,
             'trigger' => null,
         ],

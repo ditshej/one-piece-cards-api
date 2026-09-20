@@ -88,17 +88,17 @@ class ImportCardsCommand extends Command
     }
 
     /**
-     * Removes the scraped `Type ` label that vegapull leaves in the first type value.
+     * Removes the scraped `Type ` label that vegapull leaves in the type values.
+     * Only the first element carries it, but stripping every value is safe either way.
      *
      * @param  array<int, string>  $types
      * @return array<int, string>
      */
     private function normalizeTypes(array $types): array
     {
-        return array_map(
-            fn (string $type): string => $this->stripLabel($this->decodeText($type), 'Type '),
-            $types,
-        );
+        return collect($types)
+            ->map(fn (string $type): ?string => $this->stripLabel($this->decodeText($type), 'Type '))
+            ->all();
     }
 
     /**

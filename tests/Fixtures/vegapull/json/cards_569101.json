@@ -32,7 +32,7 @@
         "colors": ["Red"],
         "block_number": 4,
         "types": ["Straw Hat Crew"],
-        "effect": null,
+        "effect": "[On Play] Rest Shachi &amp; Penguin.",
         "trigger": null
     },
     {

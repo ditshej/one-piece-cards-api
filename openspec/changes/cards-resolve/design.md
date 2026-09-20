@@ -32,9 +32,13 @@ A real deck list, used to validate the design:
 ### Two accepted line formats, one regex each
 
 ```
-^(\d+)\s*[xX]\s*([A-Za-z0-9-]+(?:_[a-z0-9]+)?)$      ->  4xST01-011
-^(\d+)\s+([A-Za-z0-9-]+(?:_[a-z0-9]+)?)(?:\s+(.*))?$ ->  4 OP17-113 Streusen
+^(-?\d+)\s*[xX]\s*([A-Za-z0-9-]+(?:_[a-z0-9]+)?)$      ->  4xST01-011
+^(-?\d+)\s+([A-Za-z0-9-]+(?:_[a-z0-9]+)?)(?:\s+(.*))?$ ->  4 OP17-113 Streusen
 ```
+
+The quantity group accepts a leading minus so that `-2 OP17-113` is reported as a quantity
+error rather than as an unparseable line — the line is perfectly readable, the number is
+what is wrong, and the message should say so.
 
 Blank lines and surrounding whitespace are ignored. Any other line is a parse error naming the line number and its content.
 
@@ -80,7 +84,10 @@ Three classes, because they mean three different things:
 
 ### Warnings to stderr, payload to stdout
 
-`$this->output->getErrorOutput()->writeln(...)` for warnings; the JSON or Markdown document to stdout.
+Warnings and errors go to the console error output, the JSON or Markdown document to stdout.
+Symfony's `OutputStyle::getErrorOutput()` is protected, so the command reaches the stream via
+`$this->output->getOutput()`, taking `getErrorOutput()` when that is a `ConsoleOutputInterface`
+and falling back to stdout when it is not.
 
 - **Why:** the intended use is `php artisan cards:resolve deck.txt > deck-data.json`. If warnings went to stdout they would corrupt the file. This way the file is always clean and the warnings still reach the terminal.
 

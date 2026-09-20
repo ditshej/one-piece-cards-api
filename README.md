@@ -82,6 +82,25 @@ missing from the database (all reported together).
 at most four copies of a card — and reports violations as warnings without changing the exit
 status. Warnings go to stderr, so redirecting stdout to a file yields the document alone.
 
+### Pasting a list into the terminal
+
+Run the command with no file argument and it waits for the list on standard input, which is
+where a paste lands:
+
+```
+$ php artisan cards:resolve --format=markdown
+Paste the deck list, then press Ctrl-D.
+1 OP13-004 Sabo
+4xST01-011
+^D
+# Resolved Cards
+...
+```
+
+The hint appears immediately so the command does not look stuck, and it goes to stderr, so it
+stays out of a redirected file. Ctrl-D only takes effect at the start of a line: if the pasted
+text does not end in a newline, press Enter first, or Ctrl-D twice.
+
 ### Straight back into the clipboard
 
 Because the document goes to stdout and nothing else does, the shell can take it from there

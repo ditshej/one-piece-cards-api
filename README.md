@@ -73,7 +73,7 @@ card name is optional and informational:
 **Output** — `--format=json` (default) yields `leader`, `cards`, `totals` and `warnings`;
 `--format=markdown` yields a leader block, a card table and the effect and trigger text per
 card. Each entry carries quantity, id, name, category, colors, cost, power, counter, types,
-effect, trigger, rarity and card_set.
+effect, trigger, rarity, card_set and img_url.
 
 **Errors abort:** malformed lines, quantities below 1, duplicate card IDs, and card IDs
 missing from the database (all reported together).

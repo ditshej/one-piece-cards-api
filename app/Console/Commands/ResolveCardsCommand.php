@@ -213,6 +213,7 @@ class ResolveCardsCommand extends Command
             'trigger' => $card->trigger,
             'rarity' => $card->rarity,
             'card_set' => $card->card_set,
+            'img_url' => $card->img_url,
         ];
     }
 
@@ -297,7 +298,8 @@ class ResolveCardsCommand extends Command
             .'- Cost: '.$this->markdownValue($entry['cost']).' · Power: '.$this->markdownValue($entry['power'])
             .' · Counter: '.$this->markdownValue($entry['counter'])."\n"
             .'- Types: '.$this->markdownValue($entry['types'])."\n"
-            .'- Rarity: '.$this->markdownValue($entry['rarity']).' · Set: '.$this->markdownValue($entry['card_set']);
+            .'- Rarity: '.$this->markdownValue($entry['rarity']).' · Set: '.$this->markdownValue($entry['card_set'])."\n"
+            .'- Image: '.$this->markdownValue($entry['img_url']);
     }
 
     /** @param list<array<string, mixed>> $entries */
@@ -315,10 +317,11 @@ class ResolveCardsCommand extends Command
             $this->markdownValue($entry['types']),
             $this->markdownValue($entry['rarity']),
             $this->markdownValue($entry['card_set']),
+            $entry['img_url'] === null ? '-' : "[img]({$entry['img_url']})",
         ]).' |');
 
-        return "| Qty | ID | Name | Category | Colors | Cost | Power | Counter | Types | Rarity | Set |\n"
-            ."| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+        return "| Qty | ID | Name | Category | Colors | Cost | Power | Counter | Types | Rarity | Set | Image |\n"
+            ."| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
             .$rows->implode("\n");
     }
 

@@ -341,7 +341,7 @@ describe('resolution', function () {
             ->and($payload['totals']['cards'])->toBe(8);
     });
 
-    it('outputs all thirteen fields per entry and preserves null', function () {
+    it('outputs all fourteen fields per entry and preserves null', function () {
         Card::factory()->create([
             'id' => 'OP01-001',
             'name' => 'Roronoa Zoro',
@@ -355,18 +355,20 @@ describe('resolution', function () {
             'trigger' => null,
             'rarity' => 'SR',
             'card_set' => 'OP01',
+            'img_url' => 'https://example.test/OP01-001.png',
         ]);
 
         $payload = resolveJson(stdin: "4 OP01-001\n");
 
         expect(array_keys($payload['cards'][0]))->toBe([
             'quantity', 'id', 'name', 'category', 'colors', 'cost', 'power',
-            'counter', 'types', 'effect', 'trigger', 'rarity', 'card_set',
+            'counter', 'types', 'effect', 'trigger', 'rarity', 'card_set', 'img_url',
         ])
             ->and($payload['cards'][0]['counter'])->toBeNull()
             ->and($payload['cards'][0]['trigger'])->toBeNull()
             ->and($payload['cards'][0]['colors'])->toBe(['Red'])
-            ->and($payload['cards'][0]['power'])->toBe(5000);
+            ->and($payload['cards'][0]['power'])->toBe(5000)
+            ->and($payload['cards'][0]['img_url'])->toBe('https://example.test/OP01-001.png');
     });
 });
 
@@ -422,5 +424,22 @@ describe('output formats', function () {
             ->and($result['stdout'])->toContain('## Effects')
             ->and($result['stdout'])->toContain('[On Play] Draw a card.')
             ->and($result['stdout'])->toContain('Play this card.');
+    });
+
+    it('links the image URL in Markdown for the leader and in the card table', function () {
+        Card::factory()->create([
+            'id' => 'OP09-062', 'name' => 'Nico Robin', 'category' => 'Leader',
+            'img_url' => 'https://example.test/OP09-062.png',
+        ]);
+        Card::factory()->create([
+            'id' => 'OP17-113', 'name' => 'Streusen', 'category' => 'Character',
+            'img_url' => 'https://example.test/OP17-113.png',
+        ]);
+
+        $result = runResolve(['--format' => 'markdown'], "1 OP09-062 Nico Robin\n4 OP17-113 Streusen\n");
+
+        expect($result['stdout'])->toContain('- Image: https://example.test/OP09-062.png')
+            ->and($result['stdout'])->toContain('| Rarity | Set | Image |')
+            ->and($result['stdout'])->toContain('[img](https://example.test/OP17-113.png)');
     });
 });

@@ -49,6 +49,7 @@ All notable changes to this project will be documented in this file.
 - Add token:revoke command and refactor create-token.sh
 - Add TDD enforcement via pre-commit hook and arch test
 - Add cards:resolve command to resolve card lists as JSON or Markdown
+- Add img_url to cards:resolve output (JSON field and Markdown image links)
 - **public-repo-readiness:** Add LICENSE, CONTRIBUTING, CHANGELOG, clean up internal docs
 - **multi-value-card-filters:** Support array notation for cost filter
 - **multi-value-filters-extended:** Extend all filters to accept array notation

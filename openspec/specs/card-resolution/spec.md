@@ -111,11 +111,15 @@ The command SHALL identify the leader by the card's `category` field rather than
 - **THEN** it is still reported as the leader and excluded from the card totals
 
 ### Requirement: Resolved card fields
-For every resolved entry the command SHALL output quantity, id, name, category, colors, cost, power, counter, types, effect, trigger, rarity, and card_set.
+For every resolved entry the command SHALL output quantity, id, name, category, colors, cost, power, counter, types, effect, trigger, rarity, card_set, and img_url.
 
 #### Scenario: All fields present for a resolved card
 - **WHEN** a deck list entry resolves to a card in the database
-- **THEN** the output for that entry carries all thirteen fields, with null preserved for fields the card does not have
+- **THEN** the output for that entry carries all fourteen fields, with null preserved for fields the card does not have
+
+#### Scenario: Image URL in the Markdown document
+- **WHEN** the list is rendered with `--format=markdown`
+- **THEN** the leader block carries an `Image:` line with the plain URL, and the card table carries an `Image` column linking to it
 
 ### Requirement: Warnings separated from payload
 The command SHALL write warnings to standard error and the JSON or Markdown document to standard output, so that redirecting standard output to a file yields the document alone.

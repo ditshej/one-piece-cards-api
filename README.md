@@ -4,8 +4,8 @@
 
 Laravel application that builds a REST API for One Piece TCG card data. Card data is fetched from the official Bandai card list via [vegapull](https://github.com/Coko7/vegapull) and stored in a local SQLite database. Covers all sets published on the Bandai card list.
 
-- **Live API:** `https://op-cards-api.ditshej.ch/api/v1`
-- **API Docs:** `https://op-cards-api.ditshej.ch/docs/api`
+- **Live API:** `https://cards.optcg.ch/api/v1`
+- **API Docs:** `https://cards.optcg.ch/docs/api`
 
 ---
 
@@ -179,7 +179,7 @@ Tokens are issued per consuming application. To request access to the live API, 
 | `pack_id` | Filter by pack |
 | `search` | Full-text search in effect text |
 
-Full reference: [`/docs/api`](https://op-cards-api.ditshej.ch/docs/api)
+Full reference: [`/docs/api`](https://cards.optcg.ch/docs/api)
 
 ---
 
@@ -206,6 +206,8 @@ Then deploy:
 ```
 
 Builds frontend assets, uploads them via rsync, and runs `_deploy.sh` on the server (git pull, composer install, migrate, optimize).
+
+Server setup, scheduler, checks and troubleshooting: [`docs/deployment.md`](docs/deployment.md).
 
 ### Card Sync
 

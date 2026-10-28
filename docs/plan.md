@@ -35,7 +35,7 @@ The One Piece Cards API (REST under `/api/v1`, API docs under `/docs/api`, MCP s
    6. Only after a successful check: **delete** the site `op-cards.ditshej.ch` in Plesk and **remove** the DNS record `op-cards.ditshej.ch` (see 10).
 8. **Rollback:** Until step 6 the old site keeps running unchanged. If something goes wrong on the new site, step 6 is not executed; the new site is repaired or removed again in Plesk. After step 6 there is **no way back** to the old site. Errors on `cards.optcg.ch` are then fixed on the new site (deploy a fix or deploy an earlier commit, run `cards:sync` again). This is accepted, because no data of the old site is needed (see 5).
 9. **No weekly import.** The scheduler job `cards:import` only imports the JSON files that are already on the server (`storage/vegapull`). `cards:sync` already starts the import itself after the upload. A weekly run therefore adds nothing. In the server `.env` of `cards.optcg.ch`: `IMPORT_SCHEDULE_ENABLED=false`. No Plesk cron for `schedule:run` (there is no other scheduler job). New card data only comes via `cards:sync` from the Mac. The code (`routes/console.php`) stays unchanged. (Changed on 2026-10-28; revision 8 had the weekly import.)
-10. **Old site is deleted, DNS record removed.** Directly after a successful check (step 6): delete the site `op-cards.ditshej.ch` in Plesk (with checkout and database) and remove the DNS record `op-cards.ditshej.ch`. No backup of the old database. The domain `ditshej.ch` and its other records stay unchanged. ditshej does both.
+10. **Old site is deleted, DNS record removed.** Directly after a successful check (step 6): delete the site `op-cards.ditshej.ch` in Plesk (with checkout and database) and remove the DNS record `op-cards.ditshej.ch` if one exists. No backup of the old database. The domain `ditshej.ch` and its other records stay unchanged, including the wildcard record `*.ditshej.ch`. Because of the wildcard, the name `op-cards.ditshej.ch` keeps resolving to the server, which then only shows its default page. ditshej does both. (Changed on 2026-10-28: there was no own record, only the wildcard, which stays.)
 11. **Repo changes** (one pull request, docs and test value only, no functional change, therefore no OpenSpec change):
     - `README.md`: live URL and docs link to `https://cards.optcg.ch` (replaces the wrong host `op-cards-api.ditshej.ch`).
     - `docs/deployment.md` (new): setup of the site `cards.optcg.ch` in Plesk (document root, certificate, `.env` with `IMPORT_SCHEDULE_ENABLED=false`), note: no cron for `schedule:run`, local `.env.deploy` and `SYNC_*`, `./deploy.sh`, `cards:sync`, `./create-token.sh`, check steps. No real credentials.
@@ -45,7 +45,7 @@ The One Piece Cards API (REST under `/api/v1`, API docs under `/docs/api`, MCP s
     - The pull request with the repo changes (see 11) is merged, as is the follow-up pull request for point 9 (`docs/plan.md`, `docs/deployment.md`).
     - On `https://cards.optcg.ch`, `/up` (200), `/api/v1` with a test token, `/docs/api` and `/mcp` work; the certificate is valid.
     - On the server: `IMPORT_SCHEDULE_ENABLED=false` in the `.env`, no scheduled task for `schedule:run` in Plesk.
-    - The site `op-cards.ditshej.ch` is deleted in Plesk, and the DNS record `op-cards.ditshej.ch` is removed (the name no longer resolves).
+    - The site `op-cards.ditshej.ch` is deleted in Plesk, and there is no own DNS record for `op-cards.ditshej.ch` (the wildcard `*.ditshej.ch` stays; the old URL no longer serves the app).
 
 ## Open
 

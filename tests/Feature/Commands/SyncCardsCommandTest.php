@@ -10,7 +10,7 @@ beforeEach(function () {
         'import.sync_host' => 'example.com',
         'import.sync_user' => 'deploy-user',
         'import.sync_port' => 22,
-        'import.sync_path' => '/op-cards.ditshej.ch',
+        'import.sync_path' => '/cards.optcg.ch',
         'import.vegapull_path' => $this->vegapullPath,
     ]);
 

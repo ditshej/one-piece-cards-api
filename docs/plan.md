@@ -1,6 +1,6 @@
 # Plan: Move op-cards.ditshej.ch → cards.optcg.ch
 
-Status: complete, accepted by ditshej (plan revision 8, 2026-10-26). No open points.
+Status: complete, accepted by ditshej (plan revision 9, 2026-10-28; revision 8 accepted 2026-10-26). No open points.
 
 ## Goal
 
@@ -30,21 +30,21 @@ The One Piece Cards API (REST under `/api/v1`, API docs under `/docs/api`, MCP s
    1. Create the Plesk site `cards.optcg.ch`, Let's Encrypt certificate, checkout, `.env` on the server.
    2. Locally set `.env.deploy` and `SYNC_*` to the new site, run `./deploy.sh`.
    3. `php artisan cards:sync` to the new site.
-   4. Set up the Plesk cron for `schedule:run` (see 9).
-   5. Check: `/up`, `/api/v1` with a new test token, `/docs/api`, `/mcp`, `php artisan schedule:list` shows `cards:import`.
+   4. No Plesk cron for `schedule:run` (see 9).
+   5. Check: `/up`, `/api/v1` with a new test token, `/docs/api`, `/mcp`.
    6. Only after a successful check: **delete** the site `op-cards.ditshej.ch` in Plesk and **remove** the DNS record `op-cards.ditshej.ch` (see 10).
 8. **Rollback:** Until step 6 the old site keeps running unchanged. If something goes wrong on the new site, step 6 is not executed; the new site is repaired or removed again in Plesk. After step 6 there is **no way back** to the old site. Errors on `cards.optcg.ch` are then fixed on the new site (deploy a fix or deploy an earlier commit, run `cards:sync` again). This is accepted, because no data of the old site is needed (see 5).
-9. **Weekly import runs on the new site.** In the server `.env` of `cards.optcg.ch`: `IMPORT_SCHEDULE_ENABLED=true`. In Plesk a scheduled task (cron) for the site, every minute: `cd /cards.optcg.ch && php artisan schedule:run` (with the site's PHP). Laravel then starts `cards:import` once per week. Note: The job only imports the JSON files that are already on the server (`storage/vegapull`). New card data still comes via `cards:sync` from the Mac. Check after setup: `php artisan schedule:list` shows `cards:import`.
+9. **No weekly import.** The scheduler job `cards:import` only imports the JSON files that are already on the server (`storage/vegapull`). `cards:sync` already starts the import itself after the upload. A weekly run therefore adds nothing. In the server `.env` of `cards.optcg.ch`: `IMPORT_SCHEDULE_ENABLED=false`. No Plesk cron for `schedule:run` (there is no other scheduler job). New card data only comes via `cards:sync` from the Mac. The code (`routes/console.php`) stays unchanged. (Changed on 2026-10-28; revision 8 had the weekly import.)
 10. **Old site is deleted, DNS record removed.** Directly after a successful check (step 6): delete the site `op-cards.ditshej.ch` in Plesk (with checkout and database) and remove the DNS record `op-cards.ditshej.ch`. No backup of the old database. The domain `ditshej.ch` and its other records stay unchanged. ditshej does both.
 11. **Repo changes** (one pull request, docs and test value only, no functional change, therefore no OpenSpec change):
     - `README.md`: live URL and docs link to `https://cards.optcg.ch` (replaces the wrong host `op-cards-api.ditshej.ch`).
-    - `docs/deployment.md` (new): setup of the site `cards.optcg.ch` in Plesk (document root, certificate, `.env` with `IMPORT_SCHEDULE_ENABLED=true`), cron for `schedule:run`, local `.env.deploy` and `SYNC_*`, `./deploy.sh`, `cards:sync`, `./create-token.sh`, check steps. No real credentials.
+    - `docs/deployment.md` (new): setup of the site `cards.optcg.ch` in Plesk (document root, certificate, `.env` with `IMPORT_SCHEDULE_ENABLED=false`), note: no cron for `schedule:run`, local `.env.deploy` and `SYNC_*`, `./deploy.sh`, `cards:sync`, `./create-token.sh`, check steps. No real credentials.
     - `tests/Feature/Commands/SyncCardsCommandTest.php`: test path `/op-cards.ditshej.ch` → `/cards.optcg.ch`.
     - Archived OpenSpec changes (`openspec/changes/archive/`) stay unchanged; they describe the history.
 12. **Done criteria:** The move is done when everything is verifiably completed:
-    - The pull request with the repo changes (see 11) is merged.
+    - The pull request with the repo changes (see 11) is merged, as is the follow-up pull request for point 9 (`docs/plan.md`, `docs/deployment.md`).
     - On `https://cards.optcg.ch`, `/up` (200), `/api/v1` with a test token, `/docs/api` and `/mcp` work; the certificate is valid.
-    - `php artisan schedule:list` on the server shows `cards:import`.
+    - On the server: `IMPORT_SCHEDULE_ENABLED=false` in the `.env`, no scheduled task for `schedule:run` in Plesk.
     - The site `op-cards.ditshej.ch` is deleted in Plesk, and the DNS record `op-cards.ditshej.ch` is removed (the name no longer resolves).
 
 ## Open

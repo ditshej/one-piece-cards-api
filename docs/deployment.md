@@ -55,25 +55,11 @@ php artisan cards:sync --fetch    # refresh from Bandai first, then sync
 
 ## Scheduler
 
-The weekly `cards:import` runs through the Laravel scheduler. It is only active with `IMPORT_SCHEDULE_ENABLED=true` in the server `.env`.
+There is no scheduled task for `cards.optcg.ch`. Keep `IMPORT_SCHEDULE_ENABLED=false` in the server `.env` and do not add a Plesk cron for `schedule:run`.
 
-Plesk → Websites & Domains → `cards.optcg.ch` → Scheduled Tasks → Add Task:
+The only scheduler job is the weekly `cards:import`. It imports only the JSON files that are already on the server (`storage/vegapull`), and `cards:sync` already runs the import after each upload. New card data comes from the Mac through `cards:sync`.
 
-- Task type: "Run a command"
-- Command: `cd /cards.optcg.ch && /opt/php83/bin/php artisan schedule:run`
-- Run: Cron style, `* * * * *`
-- Notify: on errors only
-
-The job imports only the JSON files that are already on the server (`storage/vegapull`). New card data still comes from the Mac through `cards:sync`.
-
-Check on the server:
-
-```bash
-cd /cards.optcg.ch
-/opt/php83/bin/php artisan schedule:list
-```
-
-Expect a line with `cards:import`.
+`schedule:list` still lists `cards:import` when the flag is `false`. The job does not run.
 
 ## API tokens
 
@@ -171,7 +157,7 @@ APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://cards.optcg.ch
 DB_CONNECTION=sqlite
-IMPORT_SCHEDULE_ENABLED=true
+IMPORT_SCHEDULE_ENABLED=false
 ```
 
 ### 4. First deploy and data
@@ -183,9 +169,9 @@ On the Mac: set `.env.deploy` and `SYNC_*` as above, then:
 php artisan cards:sync
 ```
 
-### 5. Scheduler and checks
+### 5. Checks
 
-Add the scheduled task (see "Scheduler"), then run all checks (see "Checks").
+No scheduled task (see "Scheduler"). Run all checks (see "Checks").
 
 ### Checklist
 
@@ -194,5 +180,5 @@ Add the scheduled task (see "Scheduler"), then run all checks (see "Checks").
 - [ ] `.env`, Composer, `key:generate`, migrations
 - [ ] `.env.deploy` and `SYNC_*` on the Mac, first `./deploy.sh` ran through
 - [ ] `cards:sync` ran through
-- [ ] Scheduled task added, `schedule:list` shows `cards:import`
+- [ ] `IMPORT_SCHEDULE_ENABLED=false`, no scheduled task for `schedule:run`
 - [ ] Checks: `/up`, `/api/v1` with a test token, `/docs/api`, `/mcp`; `.env` and `.git/config` answer 404

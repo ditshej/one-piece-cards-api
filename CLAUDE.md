@@ -1,3 +1,76 @@
+# One Piece Cards API – Project Knowledge
+
+Project-specific notes. The `<laravel-boost-guidelines>` block below is generated: never edit it by hand. `php artisan boost:update` (also run by `composer update`) rewrites only that block and keeps this section. To change a rule inside the block, edit `.ai/guidelines/*.md` and run `php artisan boost:update`.
+
+## Purpose
+
+- Laravel REST API (`/api/v1`) and MCP server (`/mcp`) for One Piece TCG card data, live at `https://cards.optcg.ch`. API docs at `/docs/api`, landing page at `/`.
+- Card data comes from the official Bandai card list through [vegapull](https://github.com/Coko7/vegapull) and is stored in SQLite.
+- Consumers are the maintainer's own apps and MCP clients; each gets its own Sanctum token.
+- `docs/plan.md`: the (completed) move from `op-cards.ditshej.ch` to `cards.optcg.ch`. `docs/deployment.md`: server setup, deploy, checks, troubleshooting.
+
+## Stack
+
+- PHP: code must run on **PHP 8.3** (production shell `/opt/php83/bin/php`, Plesk domain PHP 8.3, CI 8.3, `composer.json` `^8.3`). Local dev may use a newer PHP; do not use 8.4+ only syntax or functions.
+- Laravel 13, Sanctum 4 (API tokens), `laravel/mcp` (MCP server), `dedoc/scramble` (OpenAPI docs at `/docs/api`).
+- SQLite only (`database/database.sqlite`). Holds card data, tokens, sessions, cache and queue.
+- Frontend: Blade landing page and Scramble docs only; Vite 8 + Tailwind CSS 4. No JS framework.
+- Tests: Pest 4. Formatter: Pint. Changelog: git-cliff (`cliff.toml`) from Conventional Commits.
+
+## Commands
+
+- Setup: `composer run setup` (install, `.env`, key, migrate, npm build, sets `core.hooksPath .githooks`).
+- Card data locally: `php artisan cards:fetch` (needs `vega` on `$PATH`, or `VEGAPULL_BINARY`), or `php artisan cards:import <path>`.
+- Local token: `php artisan token:create "App" "app@example.com"`; also `token:list`, `token:revoke`.
+- Run locally: `composer run dev` (serve, queue, pail, vite).
+- Tests: `php artisan test --compact` (filter with `--filter=`). No browser tests exist.
+- Format: `vendor/bin/pint --dirty`. CI runs `vendor/bin/pint --test`.
+- Build: `npm run build` (also done by `./deploy.sh`; `public/build` is gitignored).
+
+## Structure and conventions
+
+- Routes: REST in `routes/api.php` (`auth:sanctum`, prefix `v1`, names `v1.*`), MCP in `routes/ai.php`, landing page in `routes/web.php`, scheduler in `routes/console.php`.
+- API: `PacksController` and `CardsController` (index/show only), `CardsIndexRequest` for filters, `CardResource` / `PackResource` for output.
+- MCP: `app/Mcp/Servers/CardsServer.php` with tools `list-packs`, `get-pack`, `list-cards`, `get-card`. Tools mirror the REST endpoints; keep REST and MCP in sync when filters or fields change.
+- Card filters live in `Card::scopeApplyFilters()` and `Card::ARRAY_FILTER_PARAMS`. `CardsController` and `ListCardsTool` both use them. Multi-value, `_not`, `_min`/`_max` and `has_*` variants exist; add new filters there.
+- `Card` primary key is the string card id (e.g. `OP01-001`), not auto-increment. Alt arts are separate rows (id suffix `_p<n>`, e.g. `OP01-001_p1`) with `alt_art_variant` set.
+- Import config: `config/import.php` (vegapull paths, `IMPORT_SCHEDULE_ENABLED`, `SYNC_*`). Raw JSON lives in `storage/vegapull` (gitignored). `cards:import` upserts packs and cards.
+- Artisan commands in `app/Console/Commands`; every command needs `tests/Feature/Commands/<CommandName>Test.php` (enforced by `tests/Feature/ArchTest.php`).
+- Arch test forbids `dd`, `dump` and `env()` in `app/`. Read settings through `config()`.
+- Feature tests use `LazilyRefreshDatabase` with in-memory SQLite. vegapull and SSH are faked with `Process::fake()`; fixtures in `tests/Fixtures/vegapull/json`.
+- Workflow: every feature starts with an OpenSpec change (`openspec/`, `/opsx:*` commands); branch `feat/<change-name>`, change name as commit scope. Docs-only or test-value-only changes need no OpenSpec change; use a `docs/<topic>` branch.
+- Archived OpenSpec changes (`openspec/changes/archive/`) are history; never rewrite them.
+- `feat` and `fix` commit messages are user-facing: they go into `CHANGELOG.md`.
+
+## Deploy and hosting
+
+- Metanet Plesk server, site `cards.optcg.ch`, checkout `/cards.optcg.ch` (chroot), document root `cards.optcg.ch/public`. Details in `docs/deployment.md`.
+- Deploy is manual and only by the maintainer from their Mac: `./deploy.sh` (build, rsync `public/build`, SSH runs `_deploy.sh`: branch and clean-tree guard, `git pull --ff-only`, `composer install --no-dev`, `migrate --force`, `optimize:clear`). There is no CI deploy.
+- Card data reaches production only through `php artisan cards:sync` from the Mac (uploads JSON, runs `cards:import` there). It reads `SYNC_*` from the local `.env`, not from `.env.deploy`.
+- API tokens on production: `./create-token.sh` (SSH, reads `.env.deploy`). The plaintext token is shown once.
+- No scheduler on production: `IMPORT_SCHEDULE_ENABLED=false` and no Plesk cron for `schedule:run`. Do not add one without the maintainer's decision.
+- Never automatic or by an agent: deploys, `cards:sync`, token commands against production, any SSH/Plesk/DNS change, edits to files on the server (the next deploy aborts on a dirty tree).
+- The production SQLite database is never copied between environments, in either direction. It holds the live tokens.
+- `op-cards.ditshej.ch` is shut down. Do not reintroduce it in docs or code (the wildcard `*.ditshej.ch` still resolves, but serves no app).
+
+## Data protection and test data
+
+- Public repository. Never commit `.env`, `.env.deploy`, SSH hosts, users, ports, server credentials, tokens, `database/*.sqlite` or vegapull dumps.
+- Docs use placeholders (`<ssh host>`, `<test token>`); `.env.example` and `.env.deploy.example` keep placeholders only.
+- Test data is invented or comes from `tests/Fixtures`. No real tokens or e-mail addresses in tests (use `example.com`).
+- Card data is public Bandai data; user data is limited to token owner names and e-mails, which stay on the server.
+
+## Pitfalls
+
+- Plain `php` in the server shell is an older version; always use `/opt/php83/bin/php` (`DEPLOY_PHP`, `SYNC_PHP`).
+- `SyncCardsCommand` and `create-token.sh` run on the Mac and reach the server over SSH; they do not run on the server.
+- `cards:fetch` takes minutes and needs network access to Bandai; tests must never call the real `vega` binary.
+- The weekly `cards:import` job still exists in `routes/console.php` and `schedule:list` shows it, but it is off by config. Leave the code as is.
+- Event cards: a missing cost is normalised to `0` at import; `cost=0` is a valid filter value.
+- `public/.well-known/` on the server is needed for Let's Encrypt renewal and is excluded from git there.
+- `docs/dev-setup.md` is a generic setup checklist for new Laravel projects, not this project's setup. It is tracked but listed in `.gitignore`, so local edits to it are not picked up by `git add`.
+- Never commit files under `.github/workflows/`; propose workflow changes in the PR description instead.
+
 <laravel-boost-guidelines>
 === .ai/coding-style rules ===
 

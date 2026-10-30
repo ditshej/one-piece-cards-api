@@ -1,6 +1,8 @@
 # One Piece Cards API – Project Knowledge
 
-The `<laravel-boost-guidelines>` block below is generated: never edit it. Change `.ai/guidelines/*.md` and run `php artisan boost:update`; this section is kept.
+- Laravel Boost generates the guidelines block below. Do not edit it: change `.ai/guidelines/*.md` and run `php artisan boost:update`, which rewrites only that block.
+- Never write the block's opening tag anywhere else in this file. Boost replaces from the first match, so the text above it would be lost.
+- This repo is public: this file, `docs/` and `.ai/` hold no hosts, users, paths on the server or tokens.
 
 ## Purpose
 
@@ -16,7 +18,7 @@ The `<laravel-boost-guidelines>` block below is generated: never edit it. Change
 
 ## Conventions
 
-- Code must run on **PHP 8.3** (production and CI), even if local PHP is newer.
+- Minimum PHP is **8.3** (`composer.json`, CI): no PHP 8.4+ features. The PHP version in the Boost block is the local PHP of whoever ran `boost:update`.
 - REST (`CardsController`, `PacksController`) and MCP tools (`app/Mcp/Servers/CardsServer.php`) mirror each other; change both together.
 - Card filters only in `Card::scopeApplyFilters()` / `Card::ARRAY_FILTER_PARAMS`, used by REST and MCP.
 - `Card` key is the string card id (`OP01-001`); alt arts are own rows (`OP01-001_p1`, `alt_art_variant` set).
@@ -27,11 +29,10 @@ The `<laravel-boost-guidelines>` block below is generated: never edit it. Change
 
 ## Deploy (details: `docs/deployment.md`)
 
-- Only the maintainer, by hand, from their Mac: `./deploy.sh`, `php artisan cards:sync`, `./create-token.sh`. No CI deploy.
-- Never by an agent: these commands, SSH, Plesk, DNS, or edits on the server (a dirty server tree breaks the next deploy).
-- `cards:sync` reads `SYNC_*` from the local `.env`, not `.env.deploy`.
-- The production SQLite (live tokens) is never copied in either direction.
-- No scheduler in production (`IMPORT_SCHEDULE_ENABLED=false`, no cron). The weekly job in `routes/console.php` stays in code; do not enable it without the maintainer.
+- Only the maintainer deploys, by hand: `./deploy.sh`, `php artisan cards:sync`, `./create-token.sh`. No CI deploy.
+- Never by an agent: these commands, SSH, DNS, or edits on the server (a dirty server tree breaks the next deploy).
+- The production database is never copied in either direction.
+- The weekly import job in `routes/console.php` stays in code but is off in production; do not enable it without the maintainer.
 - `op-cards.ditshej.ch` is shut down; do not reintroduce it.
 
 ## Data and pitfalls

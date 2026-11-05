@@ -133,7 +133,7 @@ parameters:
 			path: app/Console/Commands/ImportCardsCommand.php
 
 		-
-			message: '#^Parameter \#2 \$values of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Card\>\:\:updateOrCreate\(\) expects array\<string, mixed\>, array given\.$#'
+			message: '#^Parameter \#2 \$values of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Card\>\:\:updateOrCreate\(\) expects array\<string, mixed\>\|Closure, array given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Console/Commands/ImportCardsCommand.php
@@ -613,7 +613,7 @@ parameters:
 			path: app/Mcp/Tools/ListCardsTool.php
 
 		-
-			message: '#^Parameter \#1 \$value of method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Card\>\:\:limit\(\) expects int, mixed given\.$#'
+			message: '#^Parameter \#1 \$value of method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Card\>\:\:limit\(\) expects int\|null, mixed given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Mcp/Tools/ListCardsTool.php

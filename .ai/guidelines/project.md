@@ -39,3 +39,9 @@
 - Docs and `.env*.example` use placeholders only (`<ssh host>`, `<test token>`). Test data is invented, e-mails on `example.com`.
 - Event cards: missing cost is imported as `0`; `cost=0` is a valid filter.
 - `docs/dev-setup.md` is a generic checklist, not this project's setup; it is in `.gitignore`, so edits are not staged.
+
+### Enforcement
+
+- Hooks and CI come from the rig-enforcement skill (base version 1). Do not edit `.claude/settings.json`, `.claude/hooks/base/`, `.githooks/base/` or `docs/ai-review/base.md`; project rules go into the `project/` folders and `docs/ai-review/project.md`.
+- Releases are tags `vX.Y.Z` (semantic versioning). Before tagging, run the AI review from the rig-enforcement skill; the hook blocks the tag without `Status: pass`.
+- `@phpstan-ignore` only with the error identifier and a reason.

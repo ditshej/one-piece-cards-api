@@ -191,6 +191,12 @@ Multiple commits per phase are fine — commit as often as makes sense (feat, fi
 - Event cards: missing cost is imported as `0`; `cost=0` is a valid filter.
 - `docs/dev-setup.md` is a generic checklist, not this project's setup; it is in `.gitignore`, so edits are not staged.
 
+### Enforcement
+
+- Hooks and CI come from the rig-enforcement skill (base version 1). Do not edit `.claude/settings.json`, `.claude/hooks/base/`, `.githooks/base/` or `docs/ai-review/base.md`; project rules go into the `project/` folders and `docs/ai-review/project.md`.
+- Releases are tags `vX.Y.Z` (semantic versioning). Before tagging, run the AI review from the rig-enforcement skill; the hook blocks the tag without `Status: pass`.
+- `@phpstan-ignore` only with the error identifier and a reason.
+
 === .ai/tdd rules ===
 
 ## TDD
@@ -214,6 +220,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - laravel/mcp (MCP) - v0
 - laravel/prompts (PROMPTS) - v0
 - laravel/sanctum (SANCTUM) - v4
+- larastan/larastan (LARASTAN) - v3
 - laravel/boost (BOOST) - v2
 - laravel/pail (PAIL) - v1
 - laravel/pint (PINT) - v1

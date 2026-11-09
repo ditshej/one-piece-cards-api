@@ -14,7 +14,7 @@ class CardsIndexRequest extends FormRequest
 
     /**
      * @param  array<mixed>  $input
-     * @return array<string, mixed>
+     * @return array<mixed>
      */
     public static function wrapListFilters(array $input): array
     {

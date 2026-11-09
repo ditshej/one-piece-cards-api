@@ -150,12 +150,12 @@ it('uses the configured php binary for remote artisan calls', function () {
 
     Process::assertRan(fn ($p) => is_array($p->command)
         && in_array('ssh', $p->command)
-        && collect($p->command)->contains(fn ($arg) => str_contains($arg, '/opt/php83/bin/php artisan cards:import'))
+        && collect($p->command)->contains(fn ($arg) => str_contains($arg, "'/opt/php83/bin/php' artisan cards:import"))
     );
 
     Process::assertRan(fn ($p) => is_array($p->command)
         && in_array('ssh', $p->command)
-        && collect($p->command)->contains(fn ($arg) => str_contains($arg, '/opt/php83/bin/php artisan optimize:clear'))
+        && collect($p->command)->contains(fn ($arg) => str_contains($arg, "'/opt/php83/bin/php' artisan optimize:clear"))
     );
 });
 
@@ -164,4 +164,21 @@ it('calls cards:fetch first when --fetch is passed', function () {
 
     $this->artisan('cards:sync --fetch')
         ->expectsOutputToContain('Fetching latest card data');
+});
+
+it('quotes paths with spaces in remote commands', function () {
+    config([
+        'import.sync_path' => '/my sites/cards',
+        'import.sync_php' => '/opt/php 83/bin/php',
+    ]);
+
+    Process::fake(['*' => Process::result(exitCode: 0)]);
+
+    $this->artisan('cards:sync')->assertSuccessful();
+
+    $remoteCommands = fn ($p) => is_array($p->command) && in_array('ssh', $p->command) ? $p->command : [];
+
+    Process::assertRan(fn ($p) => in_array("mkdir -p '/my sites/cards/storage/vegapull/json'", $remoteCommands($p), true));
+    Process::assertRan(fn ($p) => in_array("cd '/my sites/cards' && '/opt/php 83/bin/php' artisan cards:import", $remoteCommands($p), true));
+    Process::assertRan(fn ($p) => in_array("cd '/my sites/cards' && '/opt/php 83/bin/php' artisan optimize:clear", $remoteCommands($p), true));
 });

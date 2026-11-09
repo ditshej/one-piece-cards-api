@@ -46,10 +46,12 @@ class SyncCardsCommand extends Command
 
         $target = "{$user}@{$host}";
         $remoteJsonDir = "{$path}/".config('import.vegapull_relative_path').'/json';
+        $remotePath = escapeshellarg($path);
+        $remotePhp = escapeshellarg($php);
 
         $this->info('Ensuring remote json directory exists...');
 
-        $mkdirResult = $this->ssh($target, $port, "mkdir -p {$remoteJsonDir}");
+        $mkdirResult = $this->ssh($target, $port, 'mkdir -p '.escapeshellarg($remoteJsonDir));
 
         if ($mkdirResult->failed()) {
             $this->error('Could not create remote json directory: '.$mkdirResult->errorOutput());
@@ -69,7 +71,7 @@ class SyncCardsCommand extends Command
 
         $this->info('Importing card data on production...');
 
-        $importResult = $this->ssh($target, $port, "cd {$path} && {$php} artisan cards:import");
+        $importResult = $this->ssh($target, $port, "cd {$remotePath} && {$remotePhp} artisan cards:import");
 
         if ($importResult->failed()) {
             $this->error('Remote import failed: '.$importResult->errorOutput());
@@ -79,7 +81,7 @@ class SyncCardsCommand extends Command
 
         $this->info('Clearing production cache...');
 
-        $sshResult = $this->ssh($target, $port, "cd {$path} && {$php} artisan optimize:clear");
+        $sshResult = $this->ssh($target, $port, "cd {$remotePath} && {$remotePhp} artisan optimize:clear");
 
         if ($sshResult->failed()) {
             $this->warn('Cache clear failed: '.$sshResult->errorOutput());

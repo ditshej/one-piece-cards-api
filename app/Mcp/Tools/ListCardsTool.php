@@ -23,7 +23,12 @@ class ListCardsTool extends Tool
             ->mapWithKeys(fn (mixed $value, string $key) => [self::ARGUMENT_TO_REST_KEYS[$key] ?? $key => $value])
             ->all();
 
-        $validated = Validator::validate($input, CardsIndexRequest::filterRules());
+        $validated = Validator::validate(
+            $input,
+            CardsIndexRequest::filterRules(),
+            [],
+            array_flip(self::ARGUMENT_TO_REST_KEYS),
+        );
 
         $cards = Card::query()
             ->applyFilters(self::toScopeFilters($validated))

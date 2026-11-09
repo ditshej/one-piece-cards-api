@@ -155,3 +155,11 @@ it('list-cards rejects invalid filter values', function (array $arguments) {
     'cost as text' => [['cost' => 'cheap']],
     'cost_min as text' => [['cost_min' => 'low']],
 ]);
+
+it('list-cards names the MCP argument in validation errors', function () {
+    CardsServer::tool(ListCardsTool::class, ['limit' => 0])
+        ->assertHasErrors(['The limit field']);
+
+    CardsServer::tool(ListCardsTool::class, ['pack_label' => ['a']])
+        ->assertHasErrors(['pack_label']);
+});

@@ -710,3 +710,7 @@ it('filters cards without a counter using has_counter=false', function () {
 
     expect($response->json('data'))->toHaveCount(2);
 });
+
+it('rejects an unknown color', function () {
+    $this->getJson('/api/v1/cards?color=Pink')->assertUnprocessable()->assertJsonValidationErrors('color.0');
+});

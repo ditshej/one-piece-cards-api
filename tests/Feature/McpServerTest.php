@@ -139,3 +139,19 @@ it('list-cards rejects a limit outside 1 to 100', function (int $limit) {
     CardsServer::tool(ListCardsTool::class, ['limit' => $limit])
         ->assertHasErrors();
 })->with([0, 101]);
+
+it('list-cards rejects invalid filter values', function (array $arguments) {
+    Card::factory()->count(3)->create();
+
+    CardsServer::tool(ListCardsTool::class, $arguments)
+        ->assertHasErrors();
+})->with([
+    'unknown category' => [['category' => 'Foo']],
+    'unknown category in list' => [['category_not' => ['Leader', 'Foo']]],
+    'unknown color' => [['color' => 'Pink']],
+    'unknown color_not' => [['color_not' => ['Pink']]],
+    'boolean as string' => [['has_trigger' => 'false']],
+    'nested list' => [['rarity' => [['Rare']]]],
+    'cost as text' => [['cost' => 'cheap']],
+    'cost_min as text' => [['cost_min' => 'low']],
+]);

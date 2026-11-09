@@ -12,13 +12,20 @@ class CardsIndexRequest extends FormRequest
         return true;
     }
 
+    /**
+     * @param  array<mixed>  $input
+     * @return array<string, mixed>
+     */
+    public static function wrapListFilters(array $input): array
+    {
+        return collect($input)
+            ->map(fn (mixed $value, string $key) => in_array($key, Card::ARRAY_FILTER_PARAMS, true) && ! is_array($value) ? [$value] : $value)
+            ->all();
+    }
+
     protected function prepareForValidation(): void
     {
-        foreach (Card::ARRAY_FILTER_PARAMS as $param) {
-            if ($this->has($param) && ! is_array($this->$param)) {
-                $this->merge([$param => [$this->$param]]);
-            }
-        }
+        $this->merge(self::wrapListFilters($this->all()));
 
         foreach (['has_trigger', 'has_effect', 'has_counter', 'alt_art'] as $param) {
             if ($this->has($param) && is_string($this->$param)) {
@@ -32,11 +39,19 @@ class CardsIndexRequest extends FormRequest
      */
     public function rules(): array
     {
+        return self::filterRules();
+    }
+
+    /**
+     * @return array<string, array<int, mixed>>
+     */
+    public static function filterRules(): array
+    {
         return [
             'color' => ['nullable', 'array'],
-            'color.*' => ['string'],
+            'color.*' => ['string', 'in:Red,Blue,Green,Purple,Black,Yellow'],
             'color_not' => ['nullable', 'array'],
-            'color_not.*' => ['string'],
+            'color_not.*' => ['string', 'in:Red,Blue,Green,Purple,Black,Yellow'],
             'category' => ['nullable', 'array'],
             'category.*' => ['string', 'in:Character,Event,Leader,Stage'],
             'category_not' => ['nullable', 'array'],

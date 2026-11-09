@@ -607,7 +607,7 @@ parameters:
 			path: app/Mcp/Tools/GetPackTool.php
 
 		-
-			message: '#^Method App\\Mcp\\Tools\\ListCardsTool\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			message: '#^Method App\\Mcp\\Tools\\ListCardsTool\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\Type\>\.$#'
 			identifier: return.type
 			count: 1
 			path: app/Mcp/Tools/ListCardsTool.php

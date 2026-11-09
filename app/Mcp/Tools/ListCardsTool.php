@@ -4,6 +4,7 @@ namespace App\Mcp\Tools;
 
 use App\Models\Card;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\Types\Type;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -14,6 +15,8 @@ class ListCardsTool extends Tool
 {
     public function handle(Request $request): Response
     {
+        $request->validate(['limit' => ['nullable', 'integer', 'between:1,100']]);
+
         $cards = Card::query()
             ->applyFilters($request->all())
             ->limit($request->get('limit', 20))
@@ -27,24 +30,47 @@ class ListCardsTool extends Tool
      */
     public function schema(JsonSchema $schema): array
     {
+        $text = fn (string $description) => $this->oneOrMany($schema, $schema->string(), $description);
+        $number = fn (string $description) => $this->oneOrMany($schema, $schema->integer(), $description);
+
         return [
-            'color' => $schema->string()->nullable()->description('Filter by color: Red, Blue, Green, Purple, Black, Yellow'),
-            'category' => $schema->string()->nullable()->description('Filter by category: Character, Event, Leader, Stage'),
-            'cost' => $schema->integer()->nullable()->description('Filter by exact cost value'),
+            'color' => $text('Filter by color (one value or a list, any match): Red, Blue, Green, Purple, Black, Yellow'),
+            'color_not' => $text('Exclude cards with any of these colors'),
+            'category' => $text('Filter by category (one value or a list): Character, Event, Leader, Stage'),
+            'category_not' => $text('Exclude these categories'),
+            'cost' => $number('Filter by exact cost (one value or a list)'),
             'cost_min' => $schema->integer()->nullable()->description('Filter by minimum cost'),
             'cost_max' => $schema->integer()->nullable()->description('Filter by maximum cost'),
+            'cost_not' => $number('Exclude these costs'),
+            'power' => $number('Filter by exact power (one value or a list)'),
             'power_min' => $schema->integer()->nullable()->description('Filter by minimum power'),
             'power_max' => $schema->integer()->nullable()->description('Filter by maximum power'),
+            'power_not' => $number('Exclude these power values'),
+            'counter' => $number('Filter by exact counter value (one value or a list)'),
+            'counter_not' => $number('Exclude these counter values (cards without counter are kept)'),
             'pack_label' => $schema->string()->nullable()->description('Filter by pack label, e.g. "OP-15"'),
             'search' => $schema->string()->nullable()->description('Free-text search in effect and trigger text'),
             'name' => $schema->string()->nullable()->description('Filter by card name (partial match)'),
-            'rarity' => $schema->string()->nullable()->description('Filter by rarity: Common, Uncommon, Rare, SuperRare, SecretRare, TreasureRare, Special, Promo, Leader'),
-            'attribute' => $schema->string()->nullable()->description('Filter by attribute: Strike, Slash, Ranged, Wisdom, Special'),
-            'type' => $schema->string()->nullable()->description('Filter by type/archetype, e.g. "Egghead", "Straw Hat Crew"'),
-            'keyword' => $schema->string()->nullable()->description('Filter by TCG keyword, e.g. "Blocker" searches for [Blocker] in effect/trigger'),
-            'card_set' => $schema->string()->nullable()->description('Filter by origin set (ID prefix), e.g. "OP03" — returns all cards from that set regardless of which pack they appear in'),
+            'rarity' => $text('Filter by rarity (one value or a list): Common, Uncommon, Rare, SuperRare, SecretRare, TreasureRare, Special, Promo, Leader'),
+            'rarity_not' => $text('Exclude these rarities'),
+            'attribute' => $text('Filter by attribute (one value or a list): Strike, Slash, Ranged, Wisdom, Special'),
+            'attribute_not' => $text('Exclude these attributes'),
+            'type' => $text('Filter by type/archetype (one value or a list), e.g. "Egghead", "Straw Hat Crew"'),
+            'type_not' => $text('Exclude these types/archetypes'),
+            'keyword' => $text('Filter by TCG keyword (one value or a list), e.g. "Blocker" searches for [Blocker] in effect/trigger'),
+            'keyword_not' => $text('Exclude cards with these keywords in effect/trigger'),
+            'card_set' => $text('Filter by origin set (ID prefix, one value or a list), e.g. "OP03" — returns all cards from that set regardless of which pack they appear in'),
+            'card_set_not' => $text('Exclude cards from these origin sets'),
+            'has_trigger' => $schema->boolean()->nullable()->description('true: only cards with a trigger, false: only cards without'),
+            'has_effect' => $schema->boolean()->nullable()->description('true: only cards with an effect, false: only cards without'),
+            'has_counter' => $schema->boolean()->nullable()->description('true: only cards with a counter value, false: only cards without'),
             'alt_art' => $schema->boolean()->nullable()->description('Set to true to return only alt art cards'),
-            'limit' => $schema->integer()->nullable()->description('Number of results to return (default 20, max 100)'),
+            'limit' => $schema->integer()->min(1)->max(100)->nullable()->description('Number of results to return (default 20, 1 to 100)'),
         ];
+    }
+
+    private function oneOrMany(JsonSchema $schema, Type $type, string $description): Type
+    {
+        return $schema->anyOf([$type, $schema->array()->items($type)])->description($description);
     }
 }

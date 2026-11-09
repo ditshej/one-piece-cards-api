@@ -1,0 +1,13 @@
+AI review v0.2.0
+Commit: 846e939d8e72a87acd68cd2443dec0c8febc4077
+Range: v0.1.0..846e939
+Model: claude-opus-5-5
+Date: 2026-11-09
+Status: blocked
+
+Blocking findings:
+- docs/plan.md:11,16 names the server IP; docs/ai-review/project.md forbids hosts in docs/ (public repo). Fix: https://github.com/ditshej/one-piece-cards-api/pull/18
+
+Minor findings:
+- app/Mcp/Tools/ListCardsTool.php:18 only limit is validated; other filter values reach Card::scopeApplyFilters() unchecked, unlike REST (CardsIndexRequest) (issue: DIT-188)
+- app/Console/Commands/SyncCardsCommand.php:84,106 SYNC_PATH and SYNC_PHP are not shell-quoted in the remote ssh commands (issue: DIT-187)

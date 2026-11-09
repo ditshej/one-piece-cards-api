@@ -8,12 +8,12 @@ The One Piece Cards API (REST under `/api/v1`, API docs under `/docs/api`, MCP s
 
 ## Current state (from the repo and a live check, 2026-10-26)
 
-- **Hosting:** Metanet Plesk server (IP 80.74.158.100), site `op-cards.ditshej.ch`, checkout in `/op-cards.ditshej.ch`, document root `/op-cards.ditshej.ch/public`. Running: `/up` returns 200.
+- **Hosting:** Metanet Plesk server, site `op-cards.ditshej.ch`, checkout in `/op-cards.ditshej.ch`, document root `/op-cards.ditshej.ch/public`. Running: `/up` returns 200.
 - **Deploy:** `./deploy.sh` on the Mac builds the assets, uploads `public/build` via rsync and starts `_deploy.sh` on the server (git pull --ff-only, composer install, migrate, optimize:clear). Credentials in `.env.deploy` (not in the repo).
 - **Data:** SQLite (`database/database.sqlite` on the server). Contains the card data **and** the API tokens (Sanctum, one user per client app), sessions, cache, queue.
 - **Card data update:** `php artisan cards:sync` (local) uploads JSON and starts `cards:import` on the server. Target via `SYNC_*` in the local `.env`. A weekly scheduler job (`cards:import`) exists, but is only active with `IMPORT_SCHEDULE_ENABLED=true` (off today).
 - **Tokens:** `./create-token.sh` manages tokens via SSH (reads `.env.deploy`).
-- **DNS:** `cards.optcg.ch` already points to the same server (80.74.158.100), but has no matching TLS certificate and no site yet.
+- **DNS:** `cards.optcg.ch` already points to the same server, but has no matching TLS certificate and no site yet.
 - **Clients:** only ditshej's own apps. None of them is live.
 - **Repo:** The README names `op-cards-api.ditshej.ch` (wrong host, no valid certificate; the real URL is `op-cards.ditshej.ch`). `tests/Feature/Commands/SyncCardsCommandTest.php` uses the path `/op-cards.ditshej.ch` as a test value. There is no deploy documentation (`docs/deployment.md`) yet. `.env.example` and `.env.deploy.example` contain placeholders only.
 

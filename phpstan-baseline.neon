@@ -385,6 +385,12 @@ parameters:
 			path: app/Console/Commands/SyncCardsCommand.php
 
 		-
+			message: '#^Parameter \#1 \$arg of function escapeshellarg expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Console/Commands/SyncCardsCommand.php
+
+		-
 			message: '#^Part \$cardsGlob \(mixed\) of encapsed string cannot be cast to string\.$#'
 			identifier: encapsedStringPart.nonString
 			count: 1
@@ -405,13 +411,7 @@ parameters:
 		-
 			message: '#^Part \$path \(mixed\) of encapsed string cannot be cast to string\.$#'
 			identifier: encapsedStringPart.nonString
-			count: 3
-			path: app/Console/Commands/SyncCardsCommand.php
-
-		-
-			message: '#^Part \$php \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
-			count: 2
+			count: 1
 			path: app/Console/Commands/SyncCardsCommand.php
 
 		-

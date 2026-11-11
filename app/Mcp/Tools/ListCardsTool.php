@@ -2,9 +2,11 @@
 
 namespace App\Mcp\Tools;
 
+use App\Http\Requests\CardsIndexRequest;
 use App\Models\Card;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\Type;
+use Illuminate\Support\Facades\Validator;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -13,13 +15,24 @@ use Laravel\Mcp\Server\Tool;
 #[Description('List One Piece TCG cards with optional filters. Defaults to 20 results — use limit to get more (max 100).')]
 class ListCardsTool extends Tool
 {
+    private const ARGUMENT_TO_REST_KEYS = ['pack_label' => 'pack', 'limit' => 'per_page'];
+
     public function handle(Request $request): Response
     {
-        $request->validate(['limit' => ['nullable', 'integer', 'between:1,100']]);
+        $input = collect(CardsIndexRequest::wrapListFilters($request->all()))
+            ->mapWithKeys(fn (mixed $value, string $key) => [self::ARGUMENT_TO_REST_KEYS[$key] ?? $key => $value])
+            ->all();
+
+        $validated = Validator::validate(
+            $input,
+            CardsIndexRequest::filterRules(),
+            [],
+            array_flip(self::ARGUMENT_TO_REST_KEYS),
+        );
 
         $cards = Card::query()
-            ->applyFilters($request->all())
-            ->limit($request->get('limit', 20))
+            ->applyFilters(self::toScopeFilters($validated))
+            ->limit($validated['per_page'] ?? 20)
             ->get();
 
         return Response::json($cards->toArray());
@@ -67,6 +80,17 @@ class ListCardsTool extends Tool
             'alt_art' => $schema->boolean()->nullable()->description('Set to true to return only alt art cards'),
             'limit' => $schema->integer()->min(1)->max(100)->nullable()->description('Number of results to return (default 20, 1 to 100)'),
         ];
+    }
+
+    /**
+     * @param  array<mixed>  $validated
+     * @return array<string, mixed>
+     */
+    private static function toScopeFilters(array $validated): array
+    {
+        return collect($validated)
+            ->mapWithKeys(fn (mixed $value, string $key) => [array_flip(self::ARGUMENT_TO_REST_KEYS)[$key] ?? $key => $value])
+            ->all();
     }
 
     private function oneOrMany(JsonSchema $schema, Type $type, string $description): Type

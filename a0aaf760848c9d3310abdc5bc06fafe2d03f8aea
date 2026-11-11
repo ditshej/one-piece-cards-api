@@ -1,0 +1,12 @@
+AI review v0.2.0
+Commit: a0aaf760848c9d3310abdc5bc06fafe2d03f8aea
+Range: v0.1.0..a0aaf76
+Model: claude-opus-5-5
+Date: 2026-11-11
+Status: pass
+
+Blocking findings:
+- none
+
+Minor findings:
+- app/Console/Commands/SyncCardsCommand.php:49 config values are mixed; a new baseline entry was added instead of reading them as string, and the scp target path is not quoted (issue: DIT-198)

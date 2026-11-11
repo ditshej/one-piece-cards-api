@@ -61,7 +61,7 @@ class SyncCardsCommand extends Command
 
         $this->info('Uploading card json to production...');
 
-        $scpResult = Process::run(['scp', '-r', '-P', $port, "{$localJsonDir}/.", $target.':'.escapeshellarg("{$remoteJsonDir}/")]);
+        $scpResult = Process::run(['scp', '-O', '-r', '-P', $port, "{$localJsonDir}/.", $target.':'.escapeshellarg("{$remoteJsonDir}/")]);
 
         if ($scpResult->failed()) {
             $this->error('SCP failed: '.$scpResult->errorOutput());

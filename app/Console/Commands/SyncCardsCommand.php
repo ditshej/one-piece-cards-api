@@ -15,11 +15,11 @@ class SyncCardsCommand extends Command
 {
     public function handle(): int
     {
-        $host = config('import.sync_host');
-        $user = config('import.sync_user');
-        $port = (string) config('import.sync_port');
-        $path = config('import.sync_path');
-        $php = config('import.sync_php');
+        $host = $this->configString('import.sync_host');
+        $user = $this->configString('import.sync_user');
+        $port = $this->configString('import.sync_port');
+        $path = $this->configString('import.sync_path');
+        $php = $this->configString('import.sync_php');
 
         if (! $host || ! $user || ! $path) {
             $this->error('Sync config missing. Set SYNC_HOST, SYNC_USER, and SYNC_PATH in .env.');
@@ -32,9 +32,9 @@ class SyncCardsCommand extends Command
             $this->call('cards:fetch');
         }
 
-        $localJsonDir = config('import.vegapull_path').'/json';
-        $packsFile = config('import.vegapull_packs_file');
-        $cardsGlob = config('import.vegapull_cards_glob');
+        $localJsonDir = $this->configString('import.vegapull_path').'/json';
+        $packsFile = $this->configString('import.vegapull_packs_file');
+        $cardsGlob = $this->configString('import.vegapull_cards_glob');
 
         $hasCardJson = File::exists("{$localJsonDir}/{$packsFile}") || File::glob("{$localJsonDir}/{$cardsGlob}") !== [];
 
@@ -45,7 +45,7 @@ class SyncCardsCommand extends Command
         }
 
         $target = "{$user}@{$host}";
-        $remoteJsonDir = "{$path}/".config('import.vegapull_relative_path').'/json';
+        $remoteJsonDir = "{$path}/".$this->configString('import.vegapull_relative_path').'/json';
         $remotePath = escapeshellarg($path);
         $remotePhp = escapeshellarg($php);
 
@@ -61,7 +61,7 @@ class SyncCardsCommand extends Command
 
         $this->info('Uploading card json to production...');
 
-        $scpResult = Process::run(['scp', '-r', '-P', $port, "{$localJsonDir}/.", "{$target}:{$remoteJsonDir}/"]);
+        $scpResult = Process::run(['scp', '-O', '-r', '-P', $port, "{$localJsonDir}/.", $target.':'.escapeshellarg("{$remoteJsonDir}/")]);
 
         if ($scpResult->failed()) {
             $this->error('SCP failed: '.$scpResult->errorOutput());
@@ -90,6 +90,13 @@ class SyncCardsCommand extends Command
         $this->info('Sync complete.');
 
         return self::SUCCESS;
+    }
+
+    private function configString(string $key): string
+    {
+        $value = config($key);
+
+        return is_scalar($value) ? (string) $value : '';
     }
 
     private function ssh(string $target, string $port, string $remoteCommand): ProcessResult

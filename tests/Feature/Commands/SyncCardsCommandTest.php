@@ -42,6 +42,7 @@ it('uploads the card json directory via scp', function () {
 
     Process::assertRan(fn ($p) => is_array($p->command)
         && in_array('scp', $p->command)
+        && in_array('-O', $p->command)
         && in_array('22', $p->command)
         && collect($p->command)->contains(fn ($arg) => str_contains($arg, 'example.com'))
         && collect($p->command)->contains(fn ($arg) => str_contains($arg, 'storage/vegapull/json'))
@@ -181,4 +182,18 @@ it('quotes paths with spaces in remote commands', function () {
     Process::assertRan(fn ($p) => in_array("mkdir -p '/my sites/cards/storage/vegapull/json'", $remoteCommands($p), true));
     Process::assertRan(fn ($p) => in_array("cd '/my sites/cards' && '/opt/php 83/bin/php' artisan cards:import", $remoteCommands($p), true));
     Process::assertRan(fn ($p) => in_array("cd '/my sites/cards' && '/opt/php 83/bin/php' artisan optimize:clear", $remoteCommands($p), true));
+});
+
+it('quotes the remote path of the scp target', function () {
+    config(['import.sync_path' => '/my sites/cards']);
+
+    Process::fake(['*' => Process::result(exitCode: 0)]);
+
+    $this->artisan('cards:sync')->assertSuccessful();
+
+    Process::assertRan(fn ($p) => is_array($p->command)
+        && $p->command[0] === 'scp'
+        && $p->command[1] === '-O'
+        && end($p->command) === "deploy-user@example.com:'/my sites/cards/storage/vegapull/json/'"
+    );
 });

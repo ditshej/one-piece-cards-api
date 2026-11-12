@@ -65,9 +65,9 @@
             "@php artisan package:discover --ansi"
         ],
         "post-update-cmd": [
+            "@php -r \"if (file_exists('.git')) { exec('git config core.hooksPath .githooks/base'); }\"",
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
-            "@php artisan boost:update --ansi",
-            "@php -r \"if (file_exists('.git')) { exec('git config core.hooksPath .githooks/base'); }\""
+            "@php -r \"if (getenv('PAPERCLIP_RUN_ID') === false) { echo 'boost:update skipped outside Paperclip; run php artisan boost:update by hand if you need it.', PHP_EOL; exit(0); } passthru(escapeshellarg(PHP_BINARY) . ' artisan boost:update --ansi', \\$exitCode); exit(\\$exitCode);\""
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""

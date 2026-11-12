@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# rig-enforcement base 3. Do not edit; project rules go into
+# rig-enforcement base 4. Do not edit; project rules go into
 # .claude/hooks/project/pre-bash/.
 #
 # Claude Code PreToolUse hook for Bash. Blocks (exit 2, reason on stderr):

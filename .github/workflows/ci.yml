@@ -74,8 +74,10 @@ jobs:
       - uses: actions/checkout@v5
       - name: CLAUDE.md length (warning only)
         run: |
-          # With Laravel Boost the project part lives in .ai/guidelines/.
-          if [ -d .ai/guidelines ]; then
+          # With Laravel Boost the project part lives in .ai/guidelines/project.md.
+          if [ -f .ai/guidelines/project.md ]; then
+            lines=$(wc -l < .ai/guidelines/project.md)
+          elif [ -d .ai/guidelines ]; then
             lines=$(cat .ai/guidelines/*.md 2>/dev/null | wc -l)
           elif [ -f CLAUDE.md ]; then
             lines=$(wc -l < CLAUDE.md)

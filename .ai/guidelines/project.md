@@ -23,7 +23,7 @@
 - `Card` key is the string card id (`OP01-001`); alt arts are own rows (`OP01-001_p1`, `alt_art_variant` set).
 - Every Artisan command needs `tests/Feature/Commands/<CommandName>Test.php` (arch test).
 - Tests fake vegapull and SSH with `Process::fake()`; fixtures in `tests/Fixtures/vegapull/json`. Never call the real `vega`.
-- Docs-only or test-value-only changes need no OpenSpec change; use a `docs/<topic>` branch. Never rewrite `openspec/changes/archive/`.
+- Docs-only or test-value-only changes use a `docs/<topic>` branch.
 - `feat` and `fix` commits go into `CHANGELOG.md` (git-cliff): write them for users.
 
 ### Deploy (details: `docs/deployment.md`)
@@ -38,10 +38,10 @@
 
 - Docs and `.env*.example` use placeholders only (`<ssh host>`, `<test token>`). Test data is invented, e-mails on `example.com`.
 - Event cards: missing cost is imported as `0`; `cost=0` is a valid filter.
-- `docs/dev-setup.md` is a generic checklist, not this project's setup; it is in `.gitignore`, so edits are not staged.
 
 ### Enforcement
 
-- Hooks and CI come from the rig-enforcement skill (base version 1). Do not edit `.claude/settings.json`, `.claude/hooks/base/`, `.githooks/base/` or `docs/ai-review/base.md`; project rules go into the `project/` folders and `docs/ai-review/project.md`.
+- Hooks and CI come from the rig-enforcement skill (base version 2). Do not edit `.claude/settings.json`, `.claude/hooks/base/`, `.githooks/base/` or `docs/ai-review/base.md`; project rules go into the `project/` folders and `docs/ai-review/project.md`.
 - Releases are tags `vX.Y.Z` (semantic versioning). Before tagging, run the AI review from the rig-enforcement skill; the hook blocks the tag without `Status: pass`.
 - `@phpstan-ignore` only with the error identifier and a reason.
+- PHPStan baseline: never add entries. If an existing entry no longer matches after a code change (`ignore.unmatched`), fix the error in the code and delete the entry. Only if that is too much work for the change, update the entry's text to the same error.

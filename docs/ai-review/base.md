@@ -1,4 +1,4 @@
-<!-- rig-enforcement base 2. Do not edit; project points go into docs/ai-review/project.md. -->
+<!-- rig-enforcement base 3. Do not edit; project points go into docs/ai-review/project.md. -->
 
 # AI release review: base checklist
 

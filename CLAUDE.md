@@ -32,120 +32,6 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`
 - Scope optional in parentheses: `feat(auth): add login endpoint`
 - Breaking changes: `!` before the colon: `feat!: remove legacy API`
 - Description: imperative mood, lowercase, no trailing period
-- **OpenSpec changes:** use the change name as scope for every commit on that branch:
-  `docs(list-packs): add proposal, design and tasks`
-  `feat(list-packs): add packs() and pack() endpoints`
-  `refactor(list-packs): apply review feedback`
-  `docs(list-packs): archive change`
-
-=== .ai/openspec-flow rules ===
-
-## Git + OpenSpec Feature Branch Flow
-
-**Rule:** Every new feature or significant change ALWAYS starts with `/opsx:propose` — never implement directly, not even in Plan Mode. Only after the propose commit may `/opsx:apply` begin.
-
-Every OpenSpec change gets its own feature branch and lands on `main` as a single merge commit (`--no-ff`). No squash, no rebase-merge. No direct push to `main` — always via PR with CI passing.
-
-### Branch Naming Convention
-
-```
-feat/<change-name>      # e.g. feat/card-management
-
-```
-
-> **Autonomous mode (AGENT_MISSION):** When working through a full roadmap autonomously, per-change CHECKPOINTs are skipped. Instead, after the session is complete, the agent must produce a mandatory stop — presenting a full summary of all changes and optionally opening a GitHub PR for review.
-
-### Workflow per Change
-
-```bash
-
-# 0. Explore (optional)
-
-# /opsx:explore — investigate ideas and requirements before proposing
-
-# → CHECKPOINT: Present findings to user → wait for OK before proposing
-
-# 1. Create branch
-
-git checkout -b feat/<change-name>
-
-# 2. Propose
-
-openspec new change "<change-name>"
-
-# /opsx:propose — create proposal.md, specs/, design.md, tasks.md
-
-# → Commit: "docs(<change-name>): add proposal, design and tasks"
-
-# → CHECKPOINT: Present proposal summary → wait for OK before implementing
-
-# 3. Implementation (TDD)
-
-# /opsx:apply — work through tasks
-
-# → Commit(s): "feat(<change-name>): ...", "test(<change-name>): ...", etc.
-
-# 4. Verify
-
-# /opsx:verify — checks Completeness, Correctness, Coherence against specs
-
-# → Fix all CRITICALs before proceeding
-
-# 5. AI Review
-
-# laravel-simplifier Agent — automated review (spawn parallel subagents)
-
-# → Fix critical findings, commit: "refactor(<change-name>): apply review feedback"
-
-# → CHECKPOINT: Present change summary:
-
-#     - What changed (architecture, new/modified files)
-
-#     - Test results (N passed)
-
-#     - How to review manually (git diff, which pages/endpoints to test)
-
-#   → Wait for user OK before archiving
-
-# 6. Archiving
-
-# /opsx:archive — close change, merge specs
-
-# → Commit: "docs(<change-name>): archive change"
-
-# 7. Clean up fixup commits and push
-
-git fetch origin && git rebase -i --autosquash origin/main   # collapses `fixup!` commits; no-op otherwise
-
-git push -u origin feat/<change-name>
-gh pr create --title "feat(<change-name>): <description>"
-
-# → CI must pass (tests + lint), then merge via GitHub ("Create a merge commit")
-
-# 8. Merge and cleanup
-
-gh pr merge --merge --delete-branch
-git checkout main && git pull && git remote prune origin
-```
-
-### Resulting History on main
-
-```
-*   Merge pull request #43 from feat/list-packs
-|\
-| * docs(list-packs): archive change
-| * refactor(list-packs): apply review feedback
-| * feat(list-packs): add packs() and pack() endpoints
-| * docs(list-packs): add proposal, design and tasks
-|/
-*   Merge pull request #42 from feat/prev-change
-```
-
-Use `git log --first-parent main` to see only the merge commits (one per change).
-
-Each feature follows: Planning → Implementation → Verify → Review → Archiving.
-Use the change name as commit scope for every commit on that branch.
-Multiple commits per phase are fine — commit as often as makes sense (feat, fix, test, refactor, etc.).
 
 === .ai/project rules ===
 
@@ -174,7 +60,7 @@ Multiple commits per phase are fine — commit as often as makes sense (feat, fi
 - `Card` key is the string card id (`OP01-001`); alt arts are own rows (`OP01-001_p1`, `alt_art_variant` set).
 - Every Artisan command needs `tests/Feature/Commands/<CommandName>Test.php` (arch test).
 - Tests fake vegapull and SSH with `Process::fake()`; fixtures in `tests/Fixtures/vegapull/json`. Never call the real `vega`.
-- Docs-only or test-value-only changes need no OpenSpec change; use a `docs/<topic>` branch. Never rewrite `openspec/changes/archive/`.
+- Docs-only or test-value-only changes use a `docs/<topic>` branch.
 - `feat` and `fix` commits go into `CHANGELOG.md` (git-cliff): write them for users.
 
 ### Deploy (details: `docs/deployment.md`)
@@ -189,13 +75,13 @@ Multiple commits per phase are fine — commit as often as makes sense (feat, fi
 
 - Docs and `.env*.example` use placeholders only (`<ssh host>`, `<test token>`). Test data is invented, e-mails on `example.com`.
 - Event cards: missing cost is imported as `0`; `cost=0` is a valid filter.
-- `docs/dev-setup.md` is a generic checklist, not this project's setup; it is in `.gitignore`, so edits are not staged.
 
 ### Enforcement
 
-- Hooks and CI come from the rig-enforcement skill (base version 1). Do not edit `.claude/settings.json`, `.claude/hooks/base/`, `.githooks/base/` or `docs/ai-review/base.md`; project rules go into the `project/` folders and `docs/ai-review/project.md`.
+- Hooks and CI come from the rig-enforcement skill (base version 2). Do not edit `.claude/settings.json`, `.claude/hooks/base/`, `.githooks/base/` or `docs/ai-review/base.md`; project rules go into the `project/` folders and `docs/ai-review/project.md`.
 - Releases are tags `vX.Y.Z` (semantic versioning). Before tagging, run the AI review from the rig-enforcement skill; the hook blocks the tag without `Status: pass`.
 - `@phpstan-ignore` only with the error identifier and a reason.
+- PHPStan baseline: never add entries. If an existing entry no longer matches after a code change (`ignore.unmatched`), fix the error in the code and delete the entry. Only if that is too much work for the change, update the entry's text to the same error.
 
 === .ai/tdd rules ===
 
@@ -215,7 +101,7 @@ The Laravel Boost guidelines are specifically curated by Laravel maintainers for
 
 This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
 
-- php - 8.4
+- php - 8.5
 - laravel/framework (LARAVEL) - v13
 - laravel/mcp (MCP) - v0
 - laravel/prompts (PROMPTS) - v0
@@ -230,12 +116,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 
 ## Skills Activation
 
-This project has domain-specific skills available. You MUST activate the relevant skill whenever you work in that domain—don't wait until you're stuck.
-
-- `laravel-best-practices` — Apply this skill whenever writing, reviewing, or refactoring Laravel PHP code. This includes creating or modifying controllers, models, migrations, form requests, policies, jobs, scheduled commands, service classes, and Eloquent queries. Triggers for N+1 and query performance issues, caching strategies, authorization and security patterns, validation, error handling, queue and job configuration, route definitions, and architectural decisions. Also use for Laravel code reviews and refactoring existing Laravel code to follow best practices. Covers any task involving Laravel backend PHP code patterns.
-- `mcp-development` — Use this skill for Laravel MCP development only. Trigger when creating or editing MCP tools, resources, prompts, or servers in Laravel projects. Covers: artisan make:mcp-* generators, mcp:inspector, routes/ai.php, Tool/Resource/Prompt classes, schema validation, shouldRegister(), OAuth setup, URI templates, read-only attributes, and MCP debugging. Do not use for non-Laravel MCP projects or generic AI features without MCP.
-- `pest-testing` — Use this skill for Pest PHP testing in Laravel projects only. Trigger whenever any test is being written, edited, fixed, or refactored — including fixing tests that broke after a code change, adding assertions, converting PHPUnit to Pest, adding datasets, and TDD workflows. Always activate when the user asks how to write something in Pest, mentions test files or directories (tests/Feature, tests/Unit, tests/Browser), or needs browser testing, smoke testing multiple pages for JS errors, or architecture tests. Covers: it()/expect() syntax, datasets, mocking, browser testing (visit/click/fill), smoke testing, arch(), Livewire component tests, RefreshDatabase, and all Pest 4 features. Do not use for factories, seeders, migrations, controllers, models, or non-test PHP code.
-- `tailwindcss-development` — Always invoke when the user's message includes 'tailwind' in any form. Also invoke for: building responsive grid layouts (multi-column card grids, product grids), flex/grid page structures (dashboards with sidebars, fixed topbars, mobile-toggle navs), styling UI components (cards, tables, navbars, pricing sections, forms, inputs, badges), adding dark mode variants, fixing spacing or typography, and Tailwind v3/v4 work. The core use case: writing or fixing Tailwind utility classes in HTML templates (Blade, JSX, Vue). Skip for backend PHP logic, database queries, API routes, JavaScript with no HTML/CSS component, CSS file audits, build tool configuration, and vanilla CSS.
+This project has domain-specific skills available in `**/skills/**`. You MUST activate the relevant skill whenever you work in that domain—don't wait until you're stuck.
 
 ## Conventions
 
@@ -295,7 +176,6 @@ This project has domain-specific skills available. You MUST activate the relevan
 - Run Artisan commands directly via the command line (e.g., `php artisan route:list`). Use `php artisan list` to discover available commands and `php artisan [command] --help` to check parameters.
 - Inspect routes with `php artisan route:list`. Filter with: `--method=GET`, `--name=users`, `--path=api`, `--except-vendor`, `--only-vendor`.
 - Read configuration values using dot notation: `php artisan config:show app.name`, `php artisan config:show database.default`. Or read config files directly from the `config/` directory.
-- To check environment variables, read the `.env` file directly.
 
 ## Tinker
 
@@ -314,12 +194,11 @@ This project has domain-specific skills available. You MUST activate the relevan
 - Prefer PHPDoc blocks over inline comments. Only add inline comments for exceptionally complex logic.
 - Use array shape type definitions in PHPDoc blocks.
 
-=== herd rules ===
+=== deployments rules ===
 
-# Laravel Herd
+# Deployment
 
-- The application is served by Laravel Herd at `https?://[kebab-case-project-dir].test`. Use the `get-absolute-url` tool to generate valid URLs. Never run commands to serve the site. It is always available.
-- Use the `herd` CLI to manage services, PHP versions, and sites (e.g. `herd sites`, `herd services:start <service>`, `herd php:list`). Run `herd list` to discover all available commands.
+- Laravel can be deployed using [Laravel Cloud](https://cloud.laravel.com/), which is the fastest way to deploy and scale production Laravel applications.
 
 === tests rules ===
 
@@ -370,6 +249,7 @@ This project has domain-specific skills available. You MUST activate the relevan
 ## Pest
 
 - This project uses Pest for testing. Create tests: `php artisan make:test --pest {name}`.
+- The `{name}` argument should not include the test suite directory. Use `php artisan make:test --pest SomeFeatureTest` instead of `php artisan make:test --pest Feature/SomeFeatureTest`.
 - Run tests: `php artisan test --compact` or filter: `php artisan test --compact --filter=testName`.
 - Do NOT delete tests without approval.
 

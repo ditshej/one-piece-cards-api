@@ -1,4 +1,4 @@
-<!-- rig-enforcement base 1. Do not edit; project points go into docs/ai-review/project.md. -->
+<!-- rig-enforcement base 2. Do not edit; project points go into docs/ai-review/project.md. -->
 
 # AI release review: base checklist
 
@@ -37,7 +37,8 @@ issues; they do not hold the release.
   implementation.
 - **Migrations:** reversible and safe on existing data.
 - **Static analysis:** every `@phpstan-ignore` names the error identifier and
-  gives a reason.
+  gives a reason. The baseline gets no new entries; a changed entry is the same
+  error as before.
 - **Dependencies:** every new package is needed and maintained.
 - **Documentation:** `CLAUDE.md` and `docs/` follow changed project knowledge.
 

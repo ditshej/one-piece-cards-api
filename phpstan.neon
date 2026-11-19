@@ -4,5 +4,6 @@ includes:
 
 parameters:
     level: 10
+    phpVersion: 80300 # same as php-version in ci.yml
     paths:
         - app/

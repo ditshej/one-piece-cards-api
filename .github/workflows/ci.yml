@@ -1,4 +1,4 @@
-# rig-enforcement base 1 (CI template for Laravel)
+# rig-enforcement base 7 (CI template for Laravel)
 name: CI
 
 on:
@@ -9,9 +9,15 @@ on:
 permissions:
   contents: read
 
+# A new push to a pull request cancels the older run; runs on main finish.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
       - uses: shivammathur/setup-php@v2
@@ -20,6 +26,14 @@ jobs:
           extensions: mbstring, sqlite3
           coverage: pcov
           tools: composer:v2
+      - name: Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
       - run: composer install --no-interaction --no-progress --prefer-dist
       - uses: actions/setup-node@v5
         if: hashFiles('package-lock.json') != ''
@@ -39,26 +53,77 @@ jobs:
         run: vendor/bin/pint --test
       - name: Larastan
         run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+      - name: Prettier (when installed)
+        run: if [ -x node_modules/.bin/prettier ]; then node_modules/.bin/prettier --check .; fi
       - name: Pest with coverage
         run: vendor/bin/pest --coverage --min=70
 
   security:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
+      - name: CLAUDE.md length (warning only)
+        run: |
+          # With Laravel Boost the project part lives in .ai/guidelines/project.md.
+          if [ -f .ai/guidelines/project.md ]; then
+            lines=$(wc -l < .ai/guidelines/project.md)
+          elif [ -d .ai/guidelines ]; then
+            lines=$(cat .ai/guidelines/*.md 2>/dev/null | wc -l)
+          elif [ -f CLAUDE.md ]; then
+            lines=$(wc -l < CLAUDE.md)
+            # Follow @imports one level deep (files in the repository only).
+            for f in $(grep -oE '(^|[[:space:]])@[^[:space:]]+' CLAUDE.md | sed 's/^[[:space:]]*@//' | sort -u); do
+              case "$f" in /*|~*|*..*) continue ;; esac
+              if [ -f "$f" ]; then
+                lines=$((lines + $(wc -l < "$f")))
+              fi
+            done
+          else
+            exit 0
+          fi
+          if [ "$lines" -gt 60 ]; then
+            echo "::warning file=CLAUDE.md::The project part of CLAUDE.md has $lines lines (guide: about 60)."
+          fi
+      - name: Lockfiles
+        run: |
+          status=0
+          if [ -f composer.json ] && [ ! -f composer.lock ]; then
+            echo "::error file=composer.json::composer.json without composer.lock. Commit the lockfile."
+            status=1
+          fi
+          if [ -f package.json ] && [ ! -f package-lock.json ]; then
+            echo "::error file=package.json::package.json without package-lock.json. Commit the lockfile."
+            status=1
+          fi
+          exit $status
       - uses: shivammathur/setup-php@v2
+        if: (success() || failure()) && hashFiles('composer.lock') != ''
         with:
           php-version: '8.3'
           coverage: none
           tools: composer:v2
-      - name: composer audit
-        run: composer audit --locked
-      - name: npm audit
+      - name: composer audit (runtime)
+        if: (success() || failure()) && hashFiles('composer.lock') != ''
+        run: composer audit --locked --no-dev
+      - name: composer audit (all packages, warning only)
+        if: (success() || failure()) && hashFiles('composer.lock') != ''
+        run: |
+          composer audit --locked || echo "::warning file=composer.lock::composer audit found a vulnerability. Runtime packages fail the step above; dev packages: see rig-enforcement, section 3."
+      - name: npm audit (runtime)
         if: (success() || failure()) && hashFiles('package-lock.json') != ''
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=high --omit=dev
+      - name: npm audit (all dependencies, warning only)
+        if: (success() || failure()) && hashFiles('package-lock.json') != ''
+        run: |
+          npm audit --audit-level=high || echo "::warning file=package-lock.json::npm audit found a high or critical vulnerability. Runtime dependencies fail the step above; dev dependencies: see rig-enforcement, section 3."
 
   gitleaks:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v5
         with:

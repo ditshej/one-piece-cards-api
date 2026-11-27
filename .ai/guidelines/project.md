@@ -41,7 +41,7 @@
 
 ### Enforcement
 
-- Hooks and CI come from the rig-enforcement skill (base version 7). Do not edit `.claude/settings.json`, `.claude/hooks/base/`, `.githooks/base/` or `docs/ai-review/base.md`; project rules go into the `project/` folders and `docs/ai-review/project.md`.
+- Hooks and CI come from the rig-enforcement skill (base version 8). Do not edit `.claude/settings.json`, `.claude/hooks/base/`, `.githooks/base/` or `docs/ai-review/base.md`; project rules go into the `project/` folders and `docs/ai-review/project.md`. The CI jobs come from `ditshej/rig-ci@v1`; changes to them go to Galadriel, not into `ci.yml`.
 - Releases are tags `vX.Y.Z` (semantic versioning). Before tagging, run the AI review from the rig-enforcement skill; the hook blocks the tag without `Status: pass`.
 - `@phpstan-ignore` only with the error identifier and a reason.
 - PHPStan baseline: never add entries. If an existing entry no longer matches after a code change (`ignore.unmatched`), fix the error in the code and delete the entry. Only if that is too much work for the change, update the entry's text to the same error.
